@@ -4,50 +4,52 @@
 # I am far too lazy to actually write my own cowsay generator, so I'm just gonna use an API for now
 
 import datetime
-import logging
-import math
-from io import BytesIO
-from time import sleep
 import json
+import logging
 
-import numpy as np
 import requests
 
 from PIL import Image, ImageDraw, ImageFont
+from tools.images import subtract_top_from_bottom, x_width, y_height
 from waveshare_epd import epd7in5b_V3
 
-logging.basicConfig(filename="cowsay.log",
-                            filemode='a',
-                            format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
-                            datefmt='%H:%M:%S',
-                            level=logging.DEBUG)
+logging.basicConfig(
+    filename="cowsay.log",
+    filemode="a",
+    format="%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s",
+    datefmt="%H:%M:%S",
+    level=logging.DEBUG,
+)
 
 # config
-
-x_width = 880
-y_height = 528
 
 
 def get_update_time():
     current_time = datetime.datetime.utcnow().replace(microsecond=0, second=0)
-    current_time = current_time - datetime.timedelta(minutes=10 + (current_time.minute % 5))
+    current_time = current_time - datetime.timedelta(
+        minutes=10 + (current_time.minute % 5)
+    )
     return current_time
 
+
 def get_random_text():
-    r = requests.get("https://icanhazdadjoke.com/", headers={"Accept": "text/plain"})
+    r = requests.get(
+        "https://icanhazdadjoke.com/", headers={"Accept": "text/plain"}
+    )
     if r.status_code != 200:
         logging.error("Bad response from cowsay service")
     return r.text
 
 
 def get_cowsay(text):
-    payload = {'msg': text, 'f': 'default'}
+    payload = {"msg": text, "f": "default"}
     r = requests.get("https://helloacm.com/api/cowsay/", params=payload)
     if r.status_code != 200:
         logging.error("Bad response from cowsay service")
     t = r.text
     t = json.loads(t)
     return t
+
 
 def display_text(text):
     img = Image.new("RGB", (x_width, y_height), (255, 255, 255))
@@ -58,7 +60,7 @@ def display_text(text):
 
     distance = 40
     for i, s in enumerate(splitted):
-        draw.text((90, i*distance), s, (0, 0, 0), font=font)
+        draw.text((90, i * distance), s, (0, 0, 0), font=font)
 
     return img
 
@@ -74,27 +76,15 @@ def display_text_red(text):
     distance = 40
     for i, s in enumerate(splitted):
         # If it starts with one of limiting characters
-        if s[0] == '/':
+        if s[0] == "/":
             draw.text((90, i * distance), f" {s[1:-2]}", (0, 0, 0), font=font)
-        elif s[0] == '|':
+        elif s[0] == "|":
             draw.text((90, i * distance), f" {s[1:-1]}", (0, 0, 0), font=font)
-        elif s[0] == '\\':
+        elif s[0] == "\\":
             draw.text((90, i * distance), f" {s[1:-1]}", (0, 0, 0), font=font)
 
     return img
 
-
-def subtract_top_from_bottom(bottomimg, topimg):
-    bottompixels = list(bottomimg.getdata())
-    toppixels = list(topimg.getdata())
-
-    for i, pixel in enumerate(toppixels):
-        if pixel[0] < 255:
-            bottompixels[i] = (255, 255, 255)
-
-    # put data back in the image
-    bottomimg.putdata(bottompixels)
-    return bottomimg
 
 def add_time(img):
     draw = ImageDraw.Draw(img)
@@ -103,8 +93,14 @@ def add_time(img):
     current_time = datetime.datetime.now()
 
     # draw.text((x, y),"Sample Text",(r,g,b))
-    draw.text((x_width - 75, y_height - 30),current_time.strftime("%a, %H:%M"),(0,0,0),font=font)
+    draw.text(
+        (x_width - 75, y_height - 30),
+        current_time.strftime("%a, %H:%M"),
+        (0, 0, 0),
+        font=font,
+    )
     return img
+
 
 try:
     logging.info("Cowsay")
@@ -138,16 +134,16 @@ try:
 
     logging.info("Displaying")
     blackimage = img_back
-    redimage = img_red  
+    redimage = img_red
     epd.display(epd.getbuffer(blackimage), epd.getbuffer(redimage))
 
     logging.info("Go to Sleep for 5 minutes...")
     epd.sleep()
-    
+
 except IOError as e:
     logging.info(e)
-    
-except KeyboardInterrupt:    
+
+except KeyboardInterrupt:
     logging.info("ctrl + c:")
     epd7in5.epdconfig.module_exit()
     exit()
