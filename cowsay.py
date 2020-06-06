@@ -4,12 +4,10 @@
 # I am far too lazy to actually write my own cowsay generator, so I'm just gonna use an API for now
 
 import datetime
-import json
 import logging
 
-import requests
-
 from PIL import Image, ImageDraw, ImageFont
+from tools.apis import get_cowsay, get_dad_joke
 from tools.images import subtract_top_from_bottom, x_width, y_height
 from waveshare_epd import epd7in5b_V3
 
@@ -32,25 +30,6 @@ def get_update_time():
     return current_time
 
 
-def get_random_text():
-    r = requests.get(
-        "https://icanhazdadjoke.com/", headers={"Accept": "text/plain"}
-    )
-    if r.status_code != 200:
-        logging.error("Bad response from cowsay service")
-    return r.text
-
-
-def get_cowsay(text):
-    payload = {"msg": text, "f": "default"}
-    r = requests.get("https://helloacm.com/api/cowsay/", params=payload)
-    if r.status_code != 200:
-        logging.error("Bad response from cowsay service")
-    t = r.text
-    t = json.loads(t)
-    return t
-
-
 def display_text(text):
     img = Image.new("RGB", (x_width, y_height), (255, 255, 255))
     draw = ImageDraw.Draw(img)
@@ -70,7 +49,7 @@ def display_text_red(text):
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype("fonts/RobotoMono-Medium.ttf", 26)
 
-    splitted = text.split("\n")
+    splitted = text.splitlines()
     splitted = splitted[:-1]
 
     distance = 40
@@ -109,7 +88,7 @@ try:
 
     logging.info("Getting quote...")
 
-    quote = get_random_text()
+    quote = get_dad_joke()
 
     logging.info("Getting cowsay...")
 
@@ -145,5 +124,5 @@ except IOError as e:
 
 except KeyboardInterrupt:
     logging.info("ctrl + c:")
-    epd7in5.epdconfig.module_exit()
+    epd7in5b_V3.epdconfig.module_exit()
     exit()
