@@ -1,1 +1,4 @@
 openweathermap_api_key=""
+climacell_api_key = ""
+longitude = 0
+latitude = 0

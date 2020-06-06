@@ -1,27 +1,36 @@
 import datetime
-import requests
-import math
-from PIL import Image
-import numpy as np
 import logging
+import math
 from io import BytesIO
+
+import numpy as np
+import requests
+
+from PIL import Image
 
 tile_dimension = 256
 
+
 def get_update_time():
     current_time = datetime.datetime.utcnow().replace(microsecond=0, second=0)
-    current_time = current_time - datetime.timedelta(minutes=10 + (current_time.minute % 5))
+    current_time = current_time - datetime.timedelta(
+        minutes=10 + (current_time.minute % 5)
+    )
     return current_time
+
 
 def generate_base_map(zoom, xtile, ytile, api_key=None) -> str:
     return f"http://a.tile.stamen.com/toner/{zoom}/{xtile}/{ytile}.png"
 
+
 def generate_weather_map(zoom, xtile, ytile, api_key=None) -> str:
     return f"https://tile.openweathermap.org/map/precipitation_new/{zoom}/{xtile}/{ytile}.png?appid={api_key}"
+
 
 def generate_metoffice_map(zoom, xtile, ytile, api_key=None) -> str:
     current_time = get_update_time()
     return f"https://www.metoffice.gov.uk/public/data/LayerCache/OBSERVATIONS/ItemBbox/RADAR_UK_Composite_Highres/{xtile}/{ytile}/{zoom}/png?TIME={current_time.isoformat()}Z"
+
 
 def deg2num(lat_deg, lon_deg, zoom):
     lat_rad = math.radians(lat_deg)
@@ -58,7 +67,7 @@ def generate_3x5_image(xtile, ytile, zoom, generate_url, api_key=None):
             if r.status_code != 200:
                 logging.info("failed download!!")
             i = Image.open(BytesIO(r.content))
-            i = i.resize((176,176), resample=Image.BICUBIC)
+            i = i.resize((176, 176), resample=Image.BICUBIC)
             image_arr.append(i)
             x += 1
         y += 1

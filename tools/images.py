@@ -3,6 +3,7 @@ from PIL import Image
 x_width = 880
 y_height = 528
 
+
 def to_bitmap(image, threshold):
     """This converts any PNG with alpha channels into a binary bitmap based on the transparency threshold"""
     pixels = list(image.getdata())
@@ -30,6 +31,7 @@ def to_bitmap(image, threshold):
     newImg = Image.new(image.mode, image.size)
     newImg.putdata(newPixels)
     return newImg
+
 
 def subtract_top_from_bottom(bottomimg, topimg):
     """Any pixels that are not white in the top layer are removed from the bottom layer"""
