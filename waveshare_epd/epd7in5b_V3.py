@@ -169,7 +169,7 @@ class EPD:
         
         self.send_command(0x26)
         for i in range(0, int(self.width * self.height / 8)):
-            self.send_data(~imagered[i]);
+            self.send_data(imagered[i]);
         
         self.send_command(0x22);
         self.send_data(0xC7);    #Load LUT from MCU(0x32)

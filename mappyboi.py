@@ -9,6 +9,7 @@ from time import sleep
 
 import numpy as np
 import requests
+from settings import openweathermap_api_key
 
 from PIL import Image, ImageDraw, ImageFont
 from waveshare_epd import epd7in5b_V3
@@ -24,8 +25,6 @@ logging.basicConfig(filename="display.log",
 lat = 52.98
 lon = -2.28
 zoom = 7
-
-api_key = ""
 
 tile_dimension = 256
 
@@ -86,7 +85,7 @@ def generate_base_map(zoom, xtile, ytile) -> str:
 
 
 def generate_weather_map(zoom, xtile, ytile) -> str:
-    return f"https://tile.openweathermap.org/map/precipitation_new/{zoom}/{xtile}/{ytile}.png?appid={api_key}"
+    return f"https://tile.openweathermap.org/map/precipitation_new/{zoom}/{xtile}/{ytile}.png?appid={openweathermap_api_key}"
 
 def generate_metoffice_map(zoom, xtile, ytile) -> str:
     current_time = get_update_time()
@@ -147,48 +146,44 @@ def add_time(img):
 try:
     logging.info("Weather map")
 
-    while True:
+    # Do the image stuff
 
-        # Do the image stuff
+    logging.info("Download images...")
 
-        logging.info("Download images...")
+    xtile, ytile = deg2num(lat, lon, zoom)
 
-        xtile, ytile = deg2num(lat, lon, zoom)
+    logging.info("Base image downloading...")
+    base_image = generate_3x5_image(xtile, ytile, zoom, generate_base_map)
+    base_image = add_time(base_image)
 
-        logging.info("Base image downloading...")
-        base_image = generate_3x5_image(xtile, ytile, zoom, generate_base_map)
-        base_image = add_time(base_image)
+    logging.info("Weather image downloading...")
+    # Old style
+    # weather_image = generate_3x5_image(xtile, ytile, zoom, generate_weather_map)
 
-        logging.info("Weather image downloading...")
-        # Old style
-        # weather_image = generate_3x5_image(xtile, ytile, zoom, generate_weather_map)
+    # New hotness
+    weather_image = generate_3x5_image(xtile, ytile, zoom, generate_metoffice_map)
 
-        # New hotness
-        weather_image = generate_3x5_image(xtile, ytile, zoom, generate_metoffice_map)
+    logging.info("Generate map...")
 
-        logging.info("Generate map...")
+    weather_bitmap = to_bitmap(weather_image, 20)
+    final_image = subtract_top_from_bottom(base_image, weather_bitmap)
 
-        weather_bitmap = to_bitmap(weather_image, 20)
-        final_image = subtract_top_from_bottom(base_image, weather_bitmap)
+    # Actually display it
 
-        # Actually display it
+    # final_image.show()
 
-        # final_image.show()
+    epd = epd7in5b_V3.EPD()
+    logging.info("init and Clear")
+    epd.init()
+    epd.Clear()
 
-        epd = epd7in5b_V3.EPD()
-        logging.info("init and Clear")
-        epd.init()
-        epd.Clear()
+    logging.info("Displaying")
+    blackimage = final_image
+    redimage = weather_bitmap  
+    epd.display(epd.getbuffer(blackimage), epd.getbuffer(redimage))
 
-        logging.info("Displaying")
-        blackimage = final_image
-        redimage = weather_bitmap  
-        epd.display(epd.getbuffer(redimage), epd.getbuffer(blackimage))
-
-        logging.info("Go to Sleep for 5 minutes...")
-        epd.sleep()
-
-        sleep(60*5)
+    logging.info("Go to Sleep for 5 minutes...")
+    epd.sleep()
     
 except IOError as e:
     logging.info(e)
