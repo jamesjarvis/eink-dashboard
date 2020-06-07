@@ -16,10 +16,8 @@ from tools.apis import (
     get_precipitation_data,
     get_sunrise_and_sunset,
 )
+from tools.fonts import opensans
 from tools.graphing import plot_time_data
-from tools.fonts import Font
-
-from waveshare_epd import epd7in5b_V3
 from tools.images import subtract_top_from_bottom, to_bitmap, x_width, y_height
 from tools.tiles import (
     deg2num,
@@ -28,6 +26,7 @@ from tools.tiles import (
     generate_metoffice_map,
     get_update_time,
 )
+from waveshare_epd import epd7in5b_V3
 
 logging.basicConfig(
     filename="display.log",
@@ -46,7 +45,7 @@ zoom = 7
 
 def add_time(img):
     draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype(Font.opensans, 16)
+    font = ImageFont.truetype(opensans, 16)
 
     current_time = get_update_time()
     # Change to UK timezone (I know this isnt the best way of doing it but whatevs)
@@ -74,15 +73,16 @@ def add_raining_soon_graph(img, graph_img):
 
 def add_temp(img, temp):
     draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype(Font.opensans, 120)
+    font = ImageFont.truetype(opensans, 120)
     draw.text(
         (y_height - 245, -20), f"{int(temp)} C", (0, 0, 0), font=font,
     )
     return img
 
+
 def add_aqi(img, quality):
     draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype(Font.opensans, 18)
+    font = ImageFont.truetype(opensans, 18)
     draw.text(
         (y_height - 240, 140), f"AQI - {quality}", (0, 0, 0), font=font,
     )
@@ -131,13 +131,14 @@ try:
     graph_img = plot_time_data(precip_x, precip_y)
 
     base_image = add_raining_soon_graph(base_image, graph_img)
-    base_image = add_temp(base_image, temp)
+    weather_bitmap = add_temp(weather_bitmap, temp)
     base_image = add_aqi(base_image, aqi_status)
 
     # Actually display it
     final_image = subtract_top_from_bottom(base_image, weather_bitmap)
 
     # final_image.show()
+    # weather_bitmap.show()
 
     epd = epd7in5b_V3.EPD()
     logging.info("init and Clear")

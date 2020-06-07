@@ -9,6 +9,7 @@ import logging
 from PIL import Image, ImageDraw, ImageFont
 from tools.apis import get_cowsay, get_dad_joke
 from tools.images import subtract_top_from_bottom, x_width, y_height
+from tools.fonts import opensans, robotomono
 from waveshare_epd import epd7in5b_V3
 
 logging.basicConfig(
@@ -33,7 +34,7 @@ def get_update_time():
 def display_text(text):
     img = Image.new("RGB", (x_width, y_height), (255, 255, 255))
     draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype("fonts/RobotoMono-Medium.ttf", 26)
+    font = ImageFont.truetype(robotomono, 26)
 
     splitted = text.splitlines()
 
@@ -47,7 +48,7 @@ def display_text(text):
 def display_text_red(text):
     img = Image.new("RGB", (x_width, y_height), (255, 255, 255))
     draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype("fonts/RobotoMono-Medium.ttf", 26)
+    font = ImageFont.truetype(robotomono, 26)
 
     splitted = text.splitlines()
     splitted = splitted[:-1]
@@ -67,7 +68,7 @@ def display_text_red(text):
 
 def add_time(img):
     draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype("fonts/OpenSans-SemiBold.ttf", 16)
+    font = ImageFont.truetype(opensans, 16)
 
     current_time = datetime.datetime.now()
 
