@@ -17,6 +17,7 @@ from tools.apis import (
     get_sunrise_and_sunset,
 )
 from tools.graphing import plot_time_data
+from tools.fonts import Font
 
 from waveshare_epd import epd7in5b_V3
 from tools.images import subtract_top_from_bottom, to_bitmap, x_width, y_height
@@ -45,7 +46,7 @@ zoom = 7
 
 def add_time(img):
     draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype("fonts/OpenSans-SemiBold.ttf", 16)
+    font = ImageFont.truetype(Font.opensans, 16)
 
     current_time = get_update_time()
     # Change to UK timezone (I know this isnt the best way of doing it but whatevs)
@@ -73,9 +74,17 @@ def add_raining_soon_graph(img, graph_img):
 
 def add_temp(img, temp):
     draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype("fonts/OpenSans-SemiBold.ttf", 36)
+    font = ImageFont.truetype(Font.opensans, 120)
     draw.text(
-        (y_height - 240, 0), f"{int(temp)} C", (0, 0, 0), font=font,
+        (y_height - 245, -20), f"{int(temp)} C", (0, 0, 0), font=font,
+    )
+    return img
+
+def add_aqi(img, quality):
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype(Font.opensans, 18)
+    draw.text(
+        (y_height - 240, 140), f"AQI - {quality}", (0, 0, 0), font=font,
     )
     return img
 
@@ -115,7 +124,7 @@ try:
     # Get additional shit
     forecast = get_forecast(latitude, longitude, climacell_api_key)
     temp = get_current_temp(forecast)
-    # aqi_status = get_opinionated_aqi_status(get_max_aqi(forecast))
+    aqi_status = get_opinionated_aqi_status(get_max_aqi(forecast))
     # sunrise, sunset = get_sunrise_and_sunset(forecast)
 
     precip_x, precip_y = get_precipitation_data(forecast)
@@ -123,6 +132,7 @@ try:
 
     base_image = add_raining_soon_graph(base_image, graph_img)
     base_image = add_temp(base_image, temp)
+    base_image = add_aqi(base_image, aqi_status)
 
     # Actually display it
     final_image = subtract_top_from_bottom(base_image, weather_bitmap)
