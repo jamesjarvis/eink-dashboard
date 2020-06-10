@@ -12,7 +12,7 @@ def plot_time_data(x, y):
     axes.axes.get_yaxis().set_visible(False)
     axes.set_frame_on(False)
     hfmt = dates.DateFormatter("%H:%M")
-    axes.set_ylim([0, 25])
+    axes.set_ylim([0, 20])
     axes.set_xticks(axes.get_xticks()[::2])
     axes.xaxis.set_major_formatter(hfmt)
     # plt.show()

@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+import math
 
 import requests
 
@@ -23,6 +24,25 @@ def get_cowsay(text):
 
 
 def get_forecast(lat, lon, api_key):
+    """
+    Gets forecast from climacell, example response as follows:
+    [{
+        "lat": 0.1,
+        "lon": 0.1,
+        "temp": {"value": 12.97, "units": "C"},
+        "precipitation": {"value": 4.0469, "units": "mm/hr"},
+        "sunrise": {"value": "2020-06-06T03:44:36.443Z"},
+        "sunset": {"value": "2020-06-06T20:11:48.212Z"},
+        "epa_aqi": {"value": 25},
+        "china_aqi": {"value": 14},
+        "pm25": {"value": 2, "units": "µg/m3"},
+        "pm10": {"value": 4, "units": "µg/m3"},
+        "o3": {"value": 28, "units": "ppb"},
+        "no2": {"value": 3, "units": "ppb"},
+        "observation_time": {"value": "2020-06-06T17:14:41.972Z"},
+        "weather_code": {"value": "rain"},
+    }]
+    """
     end_date = datetime.datetime.now() + datetime.timedelta(hours=2)
     end_date = f"{end_date.replace(microsecond=0).isoformat()}Z"
 
@@ -58,9 +78,13 @@ def get_forecast(lat, lon, api_key):
 
 
 def get_sunrise_and_sunset(payload) -> (datetime.datetime, datetime.datetime):
-    sunrise = datetime.datetime.strptime(payload[0]["sunrise"]["value"], '%Y-%m-%dT%H:%M:%S.%fZ')
+    sunrise = datetime.datetime.strptime(
+        payload[0]["sunrise"]["value"], "%Y-%m-%dT%H:%M:%S.%fZ"
+    )
     sunrise = sunrise + datetime.timedelta(hours=1)
-    sunset = datetime.datetime.strptime(payload[0]["sunset"]["value"], '%Y-%m-%dT%H:%M:%S.%fZ')
+    sunset = datetime.datetime.strptime(
+        payload[0]["sunset"]["value"], "%Y-%m-%dT%H:%M:%S.%fZ"
+    )
     sunset = sunset + datetime.timedelta(hours=1)
     return (sunrise, sunset)
 
@@ -94,10 +118,14 @@ def get_precipitation_data(payload) -> (list, list):
     x = list()
     y = list()
     for e in payload:
-        temp_date = datetime.datetime.strptime(e["observation_time"]["value"], '%Y-%m-%dT%H:%M:%S.%fZ')
+        temp_date = datetime.datetime.strptime(
+            e["observation_time"]["value"], "%Y-%m-%dT%H:%M:%S.%fZ"
+        )
         temp_date = temp_date + datetime.timedelta(hours=1)
         x.append(temp_date)
         temp_precip = e["precipitation"]["value"]
-        temp_precip = 0 if temp_precip is None else temp_precip
+        temp_precip = (
+            0 if temp_precip is None else float(math.ceil(temp_precip * 2)) / 2
+        )
         y.append(temp_precip)
     return (x, y)
