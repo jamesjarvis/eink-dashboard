@@ -2,14 +2,13 @@
 # -*- coding:utf-8 -*-
 
 # I am far too lazy to actually write my own cowsay generator, so I'm just gonna use an API for now
-
-import datetime
 import logging
 
 from PIL import Image, ImageDraw, ImageFont
 from tools.apis import get_cowsay, get_dad_joke
 from tools.images import subtract_top_from_bottom, x_width, y_height
 from tools.fonts import opensans, robotomono
+from tools.utils import get_current_time
 from waveshare_epd import epd7in5b_V3
 
 logging.basicConfig(
@@ -21,14 +20,6 @@ logging.basicConfig(
 )
 
 # config
-
-
-def get_update_time():
-    current_time = datetime.datetime.utcnow().replace(microsecond=0, second=0)
-    current_time = current_time - datetime.timedelta(
-        minutes=10 + (current_time.minute % 5)
-    )
-    return current_time
 
 
 def display_text(text):
@@ -70,7 +61,7 @@ def add_time(img):
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype(opensans, 16)
 
-    current_time = datetime.datetime.now()
+    current_time = get_current_time()
 
     # draw.text((x, y),"Sample Text",(r,g,b))
     draw.text(

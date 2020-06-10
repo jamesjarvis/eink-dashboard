@@ -1,10 +1,7 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
-
-import datetime
 import logging
 
-import matplotlib.pyplot as plt
 from PIL import ImageDraw, ImageFont
 
 from settings import climacell_api_key, latitude, longitude
@@ -17,15 +14,16 @@ from tools.apis import (
     get_sunrise_and_sunset,
 )
 from tools.fonts import opensans
+from tools.utils import get_current_time
 from tools.graphing import plot_time_data
-from tools.images import subtract_top_from_bottom, to_bitmap, x_width, y_height
+from tools.images import subtract_top_from_bottom, to_bitmap, y_height
 from tools.tiles import (
     deg2num,
     generate_3x5_image,
     generate_base_map,
     generate_metoffice_map,
-    get_update_time,
 )
+
 from waveshare_epd import epd7in5b_V3
 
 logging.basicConfig(
@@ -47,9 +45,7 @@ def add_time(img):
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype(opensans, 16)
 
-    current_time = get_update_time()
-    # Change to UK timezone (I know this isnt the best way of doing it but whatevs)
-    current_time = current_time + datetime.timedelta(hours=1)
+    current_time = get_current_time()
 
     # draw.text((x, y),"Sample Text",(r,g,b))
     draw.text(

@@ -3,7 +3,10 @@ import json
 import logging
 import math
 
+import pytz
 import requests
+
+from .utils import get_current_time, parse_datetime
 
 
 def get_dad_joke():
@@ -43,15 +46,16 @@ def get_forecast(lat, lon, api_key):
         "weather_code": {"value": "rain"},
     }]
     """
-    end_date = datetime.datetime.now() + datetime.timedelta(hours=2)
-    end_date = f"{end_date.replace(microsecond=0).isoformat()}Z"
+    current_time = get_current_time(pytz.utc)
+    end_date = current_time + datetime.timedelta(hours=3)
+    end_date.replace(microsecond=0).isoformat()
 
     payload = {
         "lat": lat,
         "lon": lon,
         "apikey": api_key,
         "unit_system": "si",
-        "timestep": 5,
+        "timestep": 2,
         "start_time": "now",
         "end_time": end_date,
         "fields": [
@@ -78,14 +82,8 @@ def get_forecast(lat, lon, api_key):
 
 
 def get_sunrise_and_sunset(payload) -> (datetime.datetime, datetime.datetime):
-    sunrise = datetime.datetime.strptime(
-        payload[0]["sunrise"]["value"], "%Y-%m-%dT%H:%M:%S.%fZ"
-    )
-    sunrise = sunrise + datetime.timedelta(hours=1)
-    sunset = datetime.datetime.strptime(
-        payload[0]["sunset"]["value"], "%Y-%m-%dT%H:%M:%S.%fZ"
-    )
-    sunset = sunset + datetime.timedelta(hours=1)
+    sunrise = parse_datetime(payload[0]["sunrise"]["value"])
+    sunset = parse_datetime(payload[0]["sunset"]["value"])
     return (sunrise, sunset)
 
 
@@ -118,10 +116,7 @@ def get_precipitation_data(payload) -> (list, list):
     x = list()
     y = list()
     for e in payload:
-        temp_date = datetime.datetime.strptime(
-            e["observation_time"]["value"], "%Y-%m-%dT%H:%M:%S.%fZ"
-        )
-        temp_date = temp_date + datetime.timedelta(hours=1)
+        temp_date = parse_datetime(e["observation_time"]["value"], tz_to=pytz.utc)
         x.append(temp_date)
         temp_precip = e["precipitation"]["value"]
         temp_precip = (
