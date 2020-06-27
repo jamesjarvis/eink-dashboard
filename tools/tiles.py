@@ -1,11 +1,11 @@
 import datetime
 import logging
 import math
+import os
 from io import BytesIO
 
 import numpy as np
 import requests
-
 from PIL import Image
 
 tile_dimension = 256
@@ -55,7 +55,11 @@ def pil_grid(images, max_horiz=np.iinfo(int).max):
     return im_grid
 
 
-def generate_3x5_image(xtile, ytile, zoom, generate_url, api_key=None):
+def generate_3x5_image(xtile, ytile, zoom, generate_url, api_key=None, cache=None):
+    filepath = f"temp/{cache}_{xtile}_{ytile}_{zoom}.png"
+    if cache is not None and os.path.isfile(filepath):
+        return Image.open(filepath, mode="r")
+
     image_arr = list()
 
     y = -2
@@ -74,5 +78,9 @@ def generate_3x5_image(xtile, ytile, zoom, generate_url, api_key=None):
 
     # we then want to combine these images in a 3 x 5 grid I guess?
     bigboi = pil_grid(image_arr, 3)
+
+    if cache is not None and not os.path.isfile(filepath):
+        os.mkdir("temp")
+        bigboi.save(filepath)
 
     return bigboi

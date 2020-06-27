@@ -133,3 +133,6 @@ settings.py
 
 # Random shit
 myfig.png
+temp/
+.DS_Store
+.vscode/

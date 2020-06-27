@@ -95,7 +95,7 @@ try:
     xtile, ytile = deg2num(lat, lon, zoom)
 
     logging.info("Base image downloading...")
-    base_image = generate_3x5_image(xtile, ytile, zoom, generate_base_map)
+    base_image = generate_3x5_image(xtile, ytile, zoom, generate_base_map, cache="base_weather")
     # base_image = add_time(base_image)
 
     logging.info("Weather image downloading...")
