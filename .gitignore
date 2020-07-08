@@ -136,3 +136,6 @@ myfig.png
 temp/
 .DS_Store
 .vscode/
+
+template
+build

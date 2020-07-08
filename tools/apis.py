@@ -26,6 +26,16 @@ def get_cowsay(text):
     return t
 
 
+def get_iss_passtime(lat, lon, alt=50):
+    """Returns the iss pass times at this location"""
+    payload = {"lat": lat, "lon": lon, "alt": alt}
+
+    r = requests.get("http://api.open-notify.org/iss-pass.json", params=payload)
+    if r.status_code != 200:
+        logging.error("Bad response from weather forecasting service", r.status_code)
+    return r.json()
+
+
 def get_forecast(lat, lon, api_key):
     """
     Gets forecast from climacell, example response as follows:
@@ -96,6 +106,10 @@ def get_max_aqi(payload) -> int:
     return aqi
 
 
+def get_weather_icon(payload) -> float:
+    return payload[0]["weather_code"]["value"]
+
+
 def get_current_temp(payload) -> int:
     return payload[0]["temp"]["value"]
 
@@ -120,7 +134,10 @@ def get_precipitation_data(payload) -> (list, list):
         x.append(temp_date)
         temp_precip = e["precipitation"]["value"]
         temp_precip = (
-            0 if temp_precip is None else float(math.ceil(temp_precip * 2)) / 2
+            # 0 if temp_precip is None else float(math.ceil(temp_precip * 2)) / 2
+            0
+            if temp_precip is None
+            else float(temp_precip)
         )
         y.append(temp_precip)
     return (x, y)
