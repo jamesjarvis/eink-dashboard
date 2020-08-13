@@ -65,7 +65,7 @@ def draw_top_right_box(img, red=False):
 
 
 def add_raining_soon_graph(img, graph_img):
-    img.alpha_composite(graph_img, (y_height - 250, 160))
+    img.alpha_composite(graph_img, (y_height - 250, 200))
     return img
 
 
