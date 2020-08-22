@@ -49,11 +49,11 @@ class EPD:
     # Hardware reset
     def reset(self):
         epdconfig.digital_write(self.reset_pin, 1)
-        epdconfig.delay_ms(200)
+        epdconfig.delay_ms(100)
         epdconfig.digital_write(self.reset_pin, 0)
         epdconfig.delay_ms(4)
         epdconfig.digital_write(self.reset_pin, 1)
-        epdconfig.delay_ms(200)
+        epdconfig.delay_ms(100)
 
     def send_command(self, command):
         epdconfig.digital_write(self.dc_pin, 0)
@@ -72,7 +72,7 @@ class EPD:
         busy = epdconfig.digital_read(self.busy_pin)
         while busy == 1:
             busy = epdconfig.digital_read(self.busy_pin)
-        epdconfig.delay_ms(200)
+        epdconfig.delay_ms(100)
 
     def init(self):
         if epdconfig.module_init() != 0:
@@ -194,7 +194,7 @@ class EPD:
         self.send_data(0xC7)
         # Load LUT from MCU(0x32)
         self.send_command(0x20)
-        epdconfig.delay_ms(200)
+        epdconfig.delay_ms(100)
         #!!!The delay here is necessary, 200uS at least!!!
         self.ReadBusy()
 
@@ -214,7 +214,7 @@ class EPD:
         self.send_data(0xC7)
         # Load LUT from MCU(0x32)
         self.send_command(0x20)
-        epdconfig.delay_ms(200)
+        epdconfig.delay_ms(100)
         #!!!The delay here is necessary, 200uS at least!!!
         self.ReadBusy()
 

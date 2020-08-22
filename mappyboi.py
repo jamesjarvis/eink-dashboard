@@ -229,16 +229,20 @@ try:
     # weather_bitmap.show()
 
     epd = epd7in5b_V3.EPD()
+    # images
+    blackimage = epd.getbuffer(final_image)
+    redimage =  epd.getbuffer(weather_bitmap)
+
+
+
     logging.info("init and Clear")
     epd.init()
-    epd.Clear()
+    # epd.Clear()
 
     logging.info("Displaying")
-    blackimage = final_image
-    redimage = weather_bitmap
-    epd.display(epd.getbuffer(blackimage), epd.getbuffer(redimage))
+    epd.display(blackimage, redimage)
 
-    logging.info("Go to Sleep for 5 minutes...")
+    logging.info("Go to Sleep for 10 minutes...")
     epd.sleep()
 
 except IOError as e:

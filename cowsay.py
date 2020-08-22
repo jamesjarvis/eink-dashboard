@@ -99,14 +99,17 @@ try:
     # img_red.show()
 
     epd = epd7in5b_V3.EPD()
+
+    # images
+    blackimage = epd.getbuffer(img_back)
+    redimage = epd.getbuffer(img_red)
+
     logging.info("init and Clear")
     epd.init()
-    epd.Clear()
+    # epd.Clear()
 
     logging.info("Displaying")
-    blackimage = img_back
-    redimage = img_red
-    epd.display(epd.getbuffer(blackimage), epd.getbuffer(redimage))
+    epd.display(blackimage, redimage)
 
     logging.info("Go to Sleep for 5 minutes...")
     epd.sleep()
