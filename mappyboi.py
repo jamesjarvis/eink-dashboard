@@ -25,6 +25,7 @@ from tools.tiles import (
     generate_base_map,
     generate_metoffice_map,
 )
+from random import random
 
 from waveshare_epd import epd7in5b_V3
 
@@ -237,7 +238,8 @@ try:
 
     logging.info("init and Clear")
     epd.init()
-    # epd.Clear()
+    if random() < 0.2:
+        epd.Clear()
 
     logging.info("Displaying")
     epd.display(blackimage, redimage)
