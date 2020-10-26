@@ -1,4 +1,5 @@
 from PIL import Image
+from random import random
 
 x_width = 880
 y_height = 528
@@ -7,7 +8,7 @@ y_height = 528
 def to_bitmap(image, threshold):
     """This converts any PNG with alpha channels into a binary bitmap based on the transparency threshold"""
     pixels = list(image.getdata())
-    flippy = False
+    flippy = random() < 0.5
     h_size = image.size[0]
 
     # convert data list to contain only black or white
