@@ -18,7 +18,7 @@ from tools.apis import (
 from tools.fonts import opensans, weather
 from tools.utils import get_current_time, get_time_epoch
 from tools.graphing import plot_time_data
-from tools.images import subtract_top_from_bottom, to_bitmap, y_height
+from tools.images import subtract_top_from_bottom, to_bitmap, y_height, x_width
 from tools.tiles import (
     deg2num,
     generate_3x5_image,
@@ -52,7 +52,10 @@ def add_time(img):
 
     # draw.text((x, y),"Sample Text",(r,g,b))
     draw.text(
-        (400, 0), current_time.strftime("%a, %H:%M"), (255, 255, 255), font=font,
+        (400, 0),
+        current_time.strftime("%a, %H:%M"),
+        (255, 255, 255),
+        font=font,
     )
     return img
 
@@ -75,10 +78,17 @@ def add_temp(img, temp):
     font = ImageFont.truetype(opensans, 120)
     weatherfont = ImageFont.truetype(weather, 150)
     draw.text(
-        (y_height - 255, -30), f"{int(temp)}", (0, 0, 0), font=font,
+        (y_height - 250, -30),
+        f"{int(temp)}",
+        (0, 0, 0),
+        font=font,
     )
+    c_position = 180 if len(str(temp)) > 1 else 100
     draw.text(
-        (y_height - 100, -55), "\uf03c", (0, 0, 0), font=weatherfont,
+        (y_height - c_position, -55),
+        "\uf03c",
+        (0, 0, 0),
+        font=weatherfont,
     )
     return img
 
@@ -87,7 +97,10 @@ def add_aqi(img, quality):
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype(opensans, 18)
     draw.text(
-        (y_height - 240, 110), f"AQI - {quality}", (0, 0, 0), font=font,
+        (y_height - 240, 110),
+        f"AQI - {quality}",
+        (0, 0, 0),
+        font=font,
     )
     return img
 
@@ -108,7 +121,10 @@ def add_sunriseset(img, sunrise_time, sunset_time):
         sunthingtodraw = sunset
         suntimetowrite = sunset_time
     draw.text(
-        (y_height - 240, 140), sunthingtodraw, (0, 0, 0), font=weatherfont,
+        (y_height - 240, 140),
+        sunthingtodraw,
+        (0, 0, 0),
+        font=weatherfont,
     )
     draw.text(
         (y_height - 203, 140),
@@ -130,7 +146,20 @@ def add_iss_passtime(img, passtimes):
         text = next_pass_time.strftime("%-d %b, %H:%M")
 
     draw.text(
-        (y_height - 240, 170), f"ISS - {text}", (0, 0, 0), font=font,
+        (y_height - 240, 170),
+        f"ISS - {text}",
+        (0, 0, 0),
+        font=font,
+    )
+    return img
+
+
+def remove_corner(img):
+    draw = ImageDraw.Draw(img)
+    draw.rectangle(
+        (y_height - 100, x_width, y_height, x_width - 55),
+        outline=None,
+        fill=(255, 255, 255),
     )
     return img
 
@@ -165,8 +194,14 @@ def add_weather_icon(img, icon):
         "clear": "\uf00d",
     }
 
+    x_rand = int(random() * 10)
+    y_rand = int(random() * 10)
+
     draw.text(
-        (y_height - 80, 120), icons[icon], (0, 0, 0), font=font,
+        (y_height - (75 + y_rand), (115 + x_rand)),
+        icons[icon],
+        (0, 0, 0),
+        font=font,
     )
     return img
 
@@ -204,6 +239,7 @@ try:
     # Paint an area for this info
     base_image = draw_top_right_box(base_image, red=False)
     weather_bitmap = draw_top_right_box(weather_bitmap, red=True)
+    weather_bitmap = remove_corner(weather_bitmap)
 
     # Get additional shit
     forecast = get_forecast(latitude, longitude, climacell_api_key)
@@ -232,9 +268,7 @@ try:
     epd = epd7in5b_V3.EPD()
     # images
     blackimage = epd.getbuffer(final_image)
-    redimage =  epd.getbuffer(weather_bitmap)
-
-
+    redimage = epd.getbuffer(weather_bitmap)
 
     logging.info("init and Clear")
     epd.init()
