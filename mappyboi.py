@@ -83,7 +83,7 @@ def add_temp(img, temp):
         (0, 0, 0),
         font=font,
     )
-    c_position = 180 if len(str(temp)) > 1 else 100
+    c_position = 180 if temp > 10 or temp < 0 else 100
     draw.text(
         (y_height - c_position, -55),
         "\uf03c",
