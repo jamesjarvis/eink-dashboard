@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 import math
+from typing import Tuple
 
 import pytz
 import requests
@@ -91,7 +92,7 @@ def get_forecast(lat, lon, api_key):
 # The following are just to get information from the fat payload delivered by climacell:
 
 
-def get_sunrise_and_sunset(payload) -> (datetime.datetime, datetime.datetime):
+def get_sunrise_and_sunset(payload) -> Tuple[datetime.datetime, datetime.datetime]:
     sunrise = parse_datetime(payload[0]["sunrise"]["value"])
     sunset = parse_datetime(payload[0]["sunset"]["value"])
     return (sunrise, sunset)
@@ -100,7 +101,7 @@ def get_sunrise_and_sunset(payload) -> (datetime.datetime, datetime.datetime):
 def get_max_aqi(payload) -> int:
     aqi = 0
     for i in payload:
-        temp = i["epa_aqi"]["value"]
+        temp = i["epa_aqi"]["value"] or -1
         if temp > aqi:
             aqi = temp
     return aqi
@@ -115,6 +116,8 @@ def get_current_temp(payload) -> int:
 
 
 def get_opinionated_aqi_status(n: int) -> str:
+    if n < 0:
+        return "unknown"
     if n < 25:
         return "healthy"
     elif n < 50:
@@ -126,7 +129,7 @@ def get_opinionated_aqi_status(n: int) -> str:
     return "very unhealthy"
 
 
-def get_precipitation_data(payload) -> (list, list):
+def get_precipitation_data(payload) -> Tuple[list, list]:
     x = list()
     y = list()
     for e in payload:
@@ -141,3 +144,9 @@ def get_precipitation_data(payload) -> (list, list):
         )
         y.append(temp_precip)
     return (x, y)
+
+def get_web_graph_count_pages() -> int:
+    r = requests.get("https://api.jamesjarvis.io/countPages")
+    if r.status_code != 200:
+        return 0
+    return r.json()["countPages"]

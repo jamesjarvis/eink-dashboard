@@ -14,6 +14,7 @@ from tools.apis import (
     get_sunrise_and_sunset,
     get_iss_passtime,
     get_weather_icon,
+    get_web_graph_count_pages,
 )
 from tools.fonts import opensans, weather
 from tools.utils import get_current_time, get_time_epoch
@@ -79,7 +80,7 @@ def add_temp(img, temp):
     weatherfont = ImageFont.truetype(weather, 150)
     draw.text(
         (y_height - 250, -30),
-        f"{int(temp)}",
+        f"{int(temp) if temp is not None else '?'}",
         (0, 0, 0),
         font=font,
     )
@@ -205,6 +206,20 @@ def add_weather_icon(img, icon):
     )
     return img
 
+def add_count_pages(img):
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype(opensans, 16)
+
+    current_num_pages = get_web_graph_count_pages()
+
+    # draw.text((x, y),"Sample Text",(r,g,b))
+    draw.text(
+        (15, 0),
+        f"{(current_num_pages / 1000000):.1f}M",
+        (0, 0, 0),
+        font=font,
+    )
+    return img
 
 try:
     logging.info("Weather map")
@@ -257,6 +272,7 @@ try:
     base_image = add_aqi(base_image, aqi_status)
     base_image = add_sunriseset(base_image, sunrise, sunset)
     base_image = add_iss_passtime(base_image, passtimes)
+    base_image = add_count_pages(base_image)
     weather_bitmap = add_weather_icon(weather_bitmap, weather_state)
 
     # Actually display it
