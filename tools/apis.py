@@ -2,7 +2,7 @@ import datetime
 import json
 import logging
 import math
-from typing import Tuple
+from typing import List, Tuple
 
 import pytz
 import requests
@@ -150,3 +150,14 @@ def get_web_graph_count_pages() -> int:
     if r.status_code != 200:
         return 0
     return r.json()["countPages"]
+
+def get_birthdays(birthdays) -> List[str]:
+    current_time = get_current_time()
+    current_month = current_time.month
+    current_day = current_time.day
+    if current_month in birthdays["month"]:
+        month_birthdays = birthdays["month"][current_month]
+        if current_day in month_birthdays["day"]:
+            whose_birthday_is_it = month_birthdays["day"][current_day]
+            return whose_birthday_is_it
+    return []

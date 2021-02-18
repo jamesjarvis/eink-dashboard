@@ -4,8 +4,9 @@ import logging
 
 from PIL import ImageDraw, ImageFont
 
-from settings import climacell_api_key, latitude, longitude
+from settings import climacell_api_key, latitude, longitude, birthdays
 from tools.apis import (
+    get_birthdays,
     get_current_temp,
     get_forecast,
     get_max_aqi,
@@ -78,15 +79,16 @@ def add_temp(img, temp):
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype(opensans, 120)
     weatherfont = ImageFont.truetype(weather, 150)
+    temp_text = f"{int(temp) if temp is not None else '?'}"
+    w, _ = draw.textsize(temp_text, font=font)
     draw.text(
-        (y_height - 250, -30),
-        f"{int(temp) if temp is not None else '?'}",
+        ((y_height - 250) + 10, -30),
+        temp_text,
         (0, 0, 0),
         font=font,
     )
-    c_position = 180 if int(temp) < 10 and int(temp) >= 0 else 100
     draw.text(
-        (y_height - c_position, -55),
+        ((y_height - 240) + w, -55),
         "\uf03c",
         (0, 0, 0),
         font=weatherfont,
@@ -206,13 +208,13 @@ def add_weather_icon(img, icon):
     )
     return img
 
+
 def add_count_pages(img):
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype(opensans, 16)
 
     current_num_pages = get_web_graph_count_pages()
 
-    # draw.text((x, y),"Sample Text",(r,g,b))
     draw.text(
         (15, 0),
         f"{(current_num_pages / 1000000):.1f}M",
@@ -220,6 +222,42 @@ def add_count_pages(img):
         font=font,
     )
     return img
+
+
+def add_birthday(img):
+    current_birthdays = get_birthdays(birthdays)
+    if not current_birthdays:
+        # If there are no birthdays today :(
+        return img
+
+    # Draw bottom box
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype(opensans, 20)
+    draw.rectangle(
+        (0, x_width, y_height, x_width - 100), outline=None, fill=(255, 255, 255)
+    )
+    # Draw happy birthday
+    msg = "Happy birthday!"
+    w, _ = draw.textsize(msg, font=font)
+    draw.text(
+        ((y_height - w) / 2, x_width - 100),
+        msg,
+        (0, 0, 0),
+        font=font,
+    )
+
+    # Draw names
+    namefont = ImageFont.truetype(opensans, 45)
+    names = " & ".join(current_birthdays)
+    w, h = draw.textsize(names, font=namefont)
+    draw.text(
+        ((y_height - w) / 2, x_width - (10 + h)),
+        names,
+        (0, 0, 0),
+        font=namefont,
+    )
+    return img
+
 
 try:
     logging.info("Weather map")
@@ -273,6 +311,7 @@ try:
     base_image = add_sunriseset(base_image, sunrise, sunset)
     base_image = add_iss_passtime(base_image, passtimes)
     base_image = add_count_pages(base_image)
+    base_image = add_birthday(base_image)
     weather_bitmap = add_weather_icon(weather_bitmap, weather_state)
 
     # Actually display it
