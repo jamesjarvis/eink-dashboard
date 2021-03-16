@@ -14,7 +14,9 @@ from tools.apis import (
     get_precipitation_data,
     get_sunrise_and_sunset,
     get_iss_passtime,
+    get_vaccinations,
     get_weather_icon,
+    get_web_graph_count_links,
     get_web_graph_count_pages,
 )
 from tools.fonts import opensans, weather
@@ -214,10 +216,40 @@ def add_count_pages(img):
     font = ImageFont.truetype(opensans, 16)
 
     current_num_pages = get_web_graph_count_pages()
+    if current_num_pages == 0:
+        return img
+
+    current_num_links = get_web_graph_count_links()
+    if current_num_links == 0:
+        return img
 
     draw.text(
         (15, 0),
-        f"{(current_num_pages / 1000000):.1f}M",
+        f"{(current_num_pages / 1000000):.1f}M pages, {(current_num_links / 1000000):.1f}M links",
+        (0, 0, 0),
+        font=font,
+    )
+    return img
+
+
+def add_count_vaccinations(img):
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype(opensans, 20)
+
+    ukpop = 68000000
+    vaccination_data = get_vaccinations()
+    if not vaccination_data:
+        return img
+
+    draw.text(
+        (15, 20),
+        f"{(vaccination_data['value'] / 1000000):.1f}M vaccinations",
+        (0, 0, 0),
+        font=font,
+    )
+    draw.text(
+        (15, 40),
+        f"{(vaccination_data['value'] / ukpop * 100):.1f}% of UK",
         (0, 0, 0),
         font=font,
     )
@@ -311,6 +343,7 @@ try:
     base_image = add_sunriseset(base_image, sunrise, sunset)
     base_image = add_iss_passtime(base_image, passtimes)
     base_image = add_count_pages(base_image)
+    base_image = add_count_vaccinations(base_image)
     base_image = add_birthday(base_image)
     weather_bitmap = add_weather_icon(weather_bitmap, weather_state)
 
