@@ -172,13 +172,25 @@ def get_birthdays(birthdays) -> List[str]:
     return []
 
 
-def get_vaccinations() -> dict:
+def get_vaccinations_first_dose() -> dict:
     """
     This should return a dict with:
     date (str):   currentDateString
     value (int):  numberOfFirstDoseVaccinations
     """
     url = "https://api.coronavirus.data.gov.uk/v1/data?filters=areaName=United%2520Kingdom;areaType=overview&latestBy=cumPeopleVaccinatedFirstDoseByPublishDate&structure=%7B%22date%22:%22date%22,%22value%22:%22cumPeopleVaccinatedFirstDoseByPublishDate%22%7D&format=json&page=1"
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()["data"][0]
+
+def get_vaccinations_second_dose() -> dict:
+    """
+    This should return a dict with:
+    date (str):   currentDateString
+    value (int):  numberOfSecondDoseVaccinations
+    """
+    url = "https://api.coronavirus.data.gov.uk/v1/data?filters=areaName=United%2520Kingdom;areaType=overview&latestBy=cumPeopleVaccinatedSecondDoseByPublishDate&structure=%7B%22date%22:%22date%22,%22value%22:%22cumPeopleVaccinatedSecondDoseByPublishDate%22%7D&format=json&page=1"
     r = requests.get(url)
     if r.status_code != 200:
         return None

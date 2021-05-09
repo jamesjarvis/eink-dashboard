@@ -17,7 +17,8 @@ from .tools.apis import (
     get_opinionated_aqi_status,
     get_precipitation_data,
     get_sunrise_and_sunset,
-    get_vaccinations,
+    get_vaccinations_first_dose,
+    get_vaccinations_second_dose,
     get_weather_icon,
     get_web_graph_count_links,
     get_web_graph_count_pages,
@@ -251,8 +252,8 @@ class MappyBoi(Dashboard):
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype(opensans, 20)
 
-        ukpop = 68000000
-        vaccination_data = get_vaccinations()
+        ukpop = 67610000
+        vaccination_data = get_vaccinations_first_dose()
         if not vaccination_data:
             return img
 
@@ -269,6 +270,35 @@ class MappyBoi(Dashboard):
             font=font,
         )
         return img
+
+    @staticmethod
+    def add_vaccination_progress_bar(black_white_img: Image.Image, red_white_img: Image.Image) -> Tuple[Image.Image, Image.Image]:
+        bw_draw = ImageDraw.Draw(black_white_img)
+        rw_draw = ImageDraw.Draw(red_white_img)
+
+        ukpop = 67610000
+        vaccination_data_first_dose = get_vaccinations_first_dose()
+        if not vaccination_data_first_dose:
+            return black_white_img, red_white_img
+        vaccination_data_second_dose = get_vaccinations_second_dose()
+        if not vaccination_data_second_dose:
+            return black_white_img, red_white_img
+        # First should be naturally larger than second
+        first_width = vaccination_data_first_dose['value'] / ukpop * y_height
+        second_width = vaccination_data_second_dose['value'] / ukpop * y_height
+
+        bw_draw.rectangle(
+            (0, 0, second_width, 10),
+            outline=None,
+            fill=(0, 0,0),
+        )
+        rw_draw.rectangle(
+            (second_width, 0, first_width, 10),
+            outline=None,
+            fill=(0, 0,0),
+        )
+
+        return black_white_img, red_white_img
 
     @staticmethod
     def add_birthday(img: Image.Image) -> Image.Image:
@@ -363,8 +393,8 @@ class MappyBoi(Dashboard):
             __black_white_image, sunrise, sunset
         )
         __black_white_image = MappyBoi.add_iss_passtime(__black_white_image, passtimes)
-        __black_white_image = MappyBoi.add_count_pages(__black_white_image)
-        __black_white_image = MappyBoi.add_count_vaccinations(__black_white_image)
+        # __black_white_image = MappyBoi.add_count_pages(__black_white_image)
+        __black_white_image, __red_white_image = MappyBoi.add_vaccination_progress_bar(__black_white_image, __red_white_image)
         __black_white_image = MappyBoi.add_birthday(__black_white_image)
         __red_white_image = MappyBoi.add_weather_icon(__red_white_image, weather_state)
 
