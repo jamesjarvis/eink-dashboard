@@ -5,10 +5,10 @@
 import logging
 
 from PIL import Image, ImageDraw, ImageFont
-from tools.apis import get_cowsay, get_dad_joke
-from tools.images import subtract_top_from_bottom, x_width, y_height
-from tools.fonts import opensans, robotomono
-from tools.utils import get_current_time
+from src.tools.apis import get_cowsay, get_dad_joke
+from src.tools.images import subtract_top_from_bottom, x_width, y_height
+from src.tools.fonts import opensans, robotomono
+from src.tools.utils import get_current_time
 from waveshare_epd import epd7in5b_V3
 
 logging.basicConfig(

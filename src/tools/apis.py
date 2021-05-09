@@ -10,14 +10,14 @@ import requests
 from .utils import get_current_time, parse_datetime
 
 
-def get_dad_joke():
+def get_dad_joke() -> str:
     r = requests.get("https://icanhazdadjoke.com/", headers={"Accept": "text/plain"})
     if r.status_code != 200:
         logging.error("Bad response from dad joke service")
     return r.text
 
 
-def get_cowsay(text):
+def get_cowsay(text: str) -> dict:
     payload = {"msg": text, "f": "default"}
     r = requests.get("https://helloacm.com/api/cowsay/", params=payload)
     if r.status_code != 200:
@@ -27,7 +27,7 @@ def get_cowsay(text):
     return t
 
 
-def get_iss_passtime(lat, lon, alt=50):
+def get_iss_passtime(lat: float, lon: float, alt: int=50) -> dict:
     """Returns the iss pass times at this location"""
     payload = {"lat": lat, "lon": lon, "alt": alt}
 
@@ -37,7 +37,7 @@ def get_iss_passtime(lat, lon, alt=50):
     return r.json()
 
 
-def get_forecast(lat, lon, api_key):
+def get_forecast(lat: float, lon: float, api_key: str) -> dict:
     """
     Gets forecast from climacell, example response as follows:
     [{

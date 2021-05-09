@@ -5,7 +5,7 @@ x_width = 880
 y_height = 528
 
 
-def to_bitmap(image, threshold):
+def to_bitmap(image:  Image.Image, threshold: int) ->  Image.Image:
     """This converts any PNG with alpha channels into a binary bitmap based on the transparency threshold"""
     pixels = list(image.getdata())
     flippy = random() < 0.5
@@ -34,7 +34,7 @@ def to_bitmap(image, threshold):
     return newImg
 
 
-def subtract_top_from_bottom(bottomimg, topimg):
+def subtract_top_from_bottom(bottomimg:  Image.Image, topimg:  Image.Image) ->  Image.Image:
     """Any pixels that are not white in the top layer are removed from the bottom layer"""
     bottompixels = list(bottomimg.getdata())
     toppixels = list(topimg.getdata())

@@ -4,7 +4,7 @@ from PIL import Image
 import pytz
 
 
-def plot_time_data(x, y):
+def plot_time_data(x, y) ->  Image.Image:
     plt.figure(figsize=(2, 1.2), dpi=125)
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0.2)
     plt.fill_between(x, 0, y, color="black")
