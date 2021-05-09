@@ -31,9 +31,10 @@ from .tools.tiles import (
     generate_metoffice_map,
 )
 from .tools.utils import get_current_time, get_time_epoch
+from .dashboard import Dashboard
 
 
-class MappyBoi:
+class MappyBoi(Dashboard):
     """
     MappyBoi is a display mode for showing a map (and precipitation overlay) of a particular area
     and also a simple information display for fun things such as:
