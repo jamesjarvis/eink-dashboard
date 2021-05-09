@@ -3,6 +3,7 @@ import logging
 import math
 import os
 from io import BytesIO
+from typing import Tuple
 
 import numpy as np
 import requests
@@ -32,7 +33,7 @@ def generate_metoffice_map(zoom: int, xtile: int, ytile: int, api_key: str=None)
     return f"https://www.metoffice.gov.uk/public/data/LayerCache/OBSERVATIONS/ItemBbox/RADAR_UK_Composite_Highres/{xtile}/{ytile}/{zoom}/png?TIME={current_time.isoformat()}Z"
 
 
-def deg2num(lat_deg: float, lon_deg: float, zoom: int) -> tuple[int, int]:
+def deg2num(lat_deg: float, lon_deg: float, zoom: int) -> Tuple[int, int]:
     lat_rad = math.radians(lat_deg)
     n = 2.0 ** zoom
     xtile = int((lon_deg + 180.0) / 360.0 * n)

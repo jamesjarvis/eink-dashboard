@@ -1,4 +1,5 @@
 import logging
+from typing import Tuple
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -67,7 +68,7 @@ class CowSay(Dashboard):
         )
         return img
 
-    def build_images(self) -> tuple[Image.Image, Image.Image]:
+    def build_images(self) -> Tuple[Image.Image, Image.Image]:
         """
         Builds two bitmap images, one for black/white and another for red/white.
         For best results, make sure that there is no black/red overlap between the

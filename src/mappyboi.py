@@ -3,6 +3,7 @@
 import logging
 from datetime import datetime
 from random import random
+from typing import Tuple
 
 from PIL import Image, ImageDraw, ImageFont
 from settings import birthdays, climacell_api_key, latitude, longitude
@@ -304,7 +305,7 @@ class MappyBoi(Dashboard):
         )
         return img
 
-    def build_images(self) -> tuple[Image.Image, Image.Image]:
+    def build_images(self) -> Tuple[Image.Image, Image.Image]:
         """
         Builds two bitmap images, one for black/white and another for red/white.
         For best results, make sure that there is no black/red overlap between the
