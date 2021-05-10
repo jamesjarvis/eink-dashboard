@@ -1,8 +1,8 @@
 from PIL import Image
 from random import random
 
-x_width = 880
-y_height = 528
+X_WIDTH = 880
+Y_HEIGHT = 528
 
 
 def to_bitmap(image:  Image.Image, threshold: int) ->  Image.Image:

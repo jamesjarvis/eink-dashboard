@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 from src.tools.apis import get_cowsay, get_dad_joke
 from src.tools.fonts import opensans, robotomono
-from src.tools.images import subtract_top_from_bottom, x_width, y_height
+from src.tools.images import subtract_top_from_bottom, X_WIDTH, Y_HEIGHT
 from src.tools.utils import get_current_time
 
 from .dashboard import Dashboard
@@ -19,7 +19,7 @@ class CowSay(Dashboard):
 
     @staticmethod
     def display_text(text: str) -> Image.Image:
-        img = Image.new("RGB", (x_width, y_height), (255, 255, 255))
+        img = Image.new("RGB", (X_WIDTH, Y_HEIGHT), (255, 255, 255))
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype(robotomono, 26)
 
@@ -33,7 +33,7 @@ class CowSay(Dashboard):
 
     @staticmethod
     def display_text_red(text: str) -> Image.Image:
-        img = Image.new("RGB", (x_width, y_height), (255, 255, 255))
+        img = Image.new("RGB", (X_WIDTH, Y_HEIGHT), (255, 255, 255))
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype(robotomono, 26)
 
@@ -61,7 +61,7 @@ class CowSay(Dashboard):
 
         # draw.text((x, y),"Sample Text",(r,g,b))
         draw.text(
-            (x_width - 75, y_height - 30),
+            (X_WIDTH - 75, Y_HEIGHT - 30),
             current_time.strftime("%a, %H:%M"),
             (0, 0, 0),
             font=font,

@@ -9,7 +9,7 @@ import numpy as np
 import requests
 from PIL import Image
 
-tile_dimension = 256
+TILE_DIMENSION = 256
 
 
 def get_update_time() -> datetime:

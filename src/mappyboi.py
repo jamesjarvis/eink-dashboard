@@ -25,7 +25,7 @@ from .tools.apis import (
 )
 from .tools.fonts import opensans, weather
 from .tools.graphing import plot_time_data
-from .tools.images import subtract_top_from_bottom, to_bitmap, x_width, y_height
+from .tools.images import subtract_top_from_bottom, to_bitmap, X_WIDTH, Y_HEIGHT
 from .tools.tiles import (
     deg2num,
     generate_3x5_image,
@@ -81,13 +81,13 @@ class MappyBoi(Dashboard):
     def draw_top_right_box(img: Image.Image, red: bool = False) -> Image.Image:
         draw = ImageDraw.Draw(img)
         draw.rectangle(
-            (y_height - 250, 0, y_height, 350), outline=None, fill=(255, 255, 255)
+            (Y_HEIGHT - 250, 0, Y_HEIGHT, 350), outline=None, fill=(255, 255, 255)
         )
         return img
 
     @staticmethod
     def add_raining_soon_graph(img: Image.Image, graph_img) -> Image.Image:
-        img.alpha_composite(graph_img, (y_height - 250, 200))
+        img.alpha_composite(graph_img, (Y_HEIGHT - 250, 200))
         return img
 
     @staticmethod
@@ -98,13 +98,13 @@ class MappyBoi(Dashboard):
         temp_text = f"{int(temp) if temp is not None else '?'}"
         w, _ = draw.textsize(temp_text, font=font)
         draw.text(
-            ((y_height - 250) + 10, -30),
+            ((Y_HEIGHT - 250) + 10, -30),
             temp_text,
             (0, 0, 0),
             font=font,
         )
         draw.text(
-            ((y_height - 240) + w, -55),
+            ((Y_HEIGHT - 240) + w, -55),
             "\uf03c",
             (0, 0, 0),
             font=weatherfont,
@@ -116,7 +116,7 @@ class MappyBoi(Dashboard):
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype(opensans, 18)
         draw.text(
-            (y_height - 240, 110),
+            (Y_HEIGHT - 240, 110),
             f"AQI - {quality}",
             (0, 0, 0),
             font=font,
@@ -142,13 +142,13 @@ class MappyBoi(Dashboard):
             sunthingtodraw = sunset
             suntimetowrite = sunset_time
         draw.text(
-            (y_height - 240, 140),
+            (Y_HEIGHT - 240, 140),
             sunthingtodraw,
             (0, 0, 0),
             font=weatherfont,
         )
         draw.text(
-            (y_height - 203, 140),
+            (Y_HEIGHT - 203, 140),
             f"- {suntimetowrite.strftime('%H:%M')}",
             (0, 0, 0),
             font=font,
@@ -167,7 +167,7 @@ class MappyBoi(Dashboard):
             text = next_pass_time.strftime("%-d %b, %H:%M")
 
         draw.text(
-            (y_height - 240, 170),
+            (Y_HEIGHT - 240, 170),
             f"ISS - {text}",
             (0, 0, 0),
             font=font,
@@ -178,7 +178,7 @@ class MappyBoi(Dashboard):
     def remove_corner(img: Image.Image) -> Image.Image:
         draw = ImageDraw.Draw(img)
         draw.rectangle(
-            (y_height - 100, x_width, y_height, x_width - 55),
+            (Y_HEIGHT - 100, X_WIDTH, Y_HEIGHT, X_WIDTH - 55),
             outline=None,
             fill=(255, 255, 255),
         )
@@ -219,7 +219,7 @@ class MappyBoi(Dashboard):
         y_rand = int(random() * 10)
 
         draw.text(
-            (y_height - (75 + y_rand), (115 + x_rand)),
+            (Y_HEIGHT - (75 + y_rand), (115 + x_rand)),
             icons[icon],
             (0, 0, 0),
             font=font,
@@ -252,7 +252,8 @@ class MappyBoi(Dashboard):
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype(opensans, 20)
 
-        ukpop = 67610000
+        UK_POP = 67610000
+
         vaccination_data = get_vaccinations_first_dose()
         if not vaccination_data:
             return img
@@ -265,18 +266,22 @@ class MappyBoi(Dashboard):
         )
         draw.text(
             (15, 40),
-            f"{(vaccination_data['value'] / ukpop * 100):.1f}% of UK",
+            f"{(vaccination_data['value'] / UK_POP * 100):.1f}% of UK",
             (0, 0, 0),
             font=font,
         )
         return img
 
     @staticmethod
-    def add_vaccination_progress_bar(black_white_img: Image.Image, red_white_img: Image.Image) -> Tuple[Image.Image, Image.Image]:
+    def add_vaccination_progress_bar(
+        black_white_img: Image.Image, red_white_img: Image.Image
+    ) -> Tuple[Image.Image, Image.Image]:
         bw_draw = ImageDraw.Draw(black_white_img)
         rw_draw = ImageDraw.Draw(red_white_img)
 
-        ukpop = 67610000
+        UK_POP = 67610000
+        PROGRESS_BAR_SIZE = 10
+
         vaccination_data_first_dose = get_vaccinations_first_dose()
         if not vaccination_data_first_dose:
             return black_white_img, red_white_img
@@ -284,18 +289,25 @@ class MappyBoi(Dashboard):
         if not vaccination_data_second_dose:
             return black_white_img, red_white_img
         # First should be naturally larger than second
-        first_width = vaccination_data_first_dose['value'] / ukpop * y_height
-        second_width = vaccination_data_second_dose['value'] / ukpop * y_height
+        first_width = vaccination_data_first_dose["value"] / UK_POP * Y_HEIGHT
+        second_width = vaccination_data_second_dose["value"] / UK_POP * Y_HEIGHT
+
+        # Clear red space
+        rw_draw.rectangle(
+            (0, 0, Y_HEIGHT, PROGRESS_BAR_SIZE),
+            outline=None,
+            fill=(255, 255, 255),
+        )
 
         bw_draw.rectangle(
-            (0, 0, second_width, 10),
+            (0, 0, second_width, PROGRESS_BAR_SIZE),
             outline=None,
-            fill=(0, 0,0),
+            fill=(0, 0, 0),
         )
         rw_draw.rectangle(
-            (second_width, 0, first_width, 10),
+            (second_width, 0, first_width, PROGRESS_BAR_SIZE),
             outline=None,
-            fill=(0, 0,0),
+            fill=(0, 0, 0),
         )
 
         return black_white_img, red_white_img
@@ -311,13 +323,13 @@ class MappyBoi(Dashboard):
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype(opensans, 20)
         draw.rectangle(
-            (0, x_width, y_height, x_width - 100), outline=None, fill=(255, 255, 255)
+            (0, X_WIDTH, Y_HEIGHT, X_WIDTH - 100), outline=None, fill=(255, 255, 255)
         )
         # Draw happy birthday
         msg = "Happy birthday!"
         w, _ = draw.textsize(msg, font=font)
         draw.text(
-            ((y_height - w) / 2, x_width - 100),
+            ((Y_HEIGHT - w) / 2, X_WIDTH - 100),
             msg,
             (0, 0, 0),
             font=font,
@@ -328,7 +340,7 @@ class MappyBoi(Dashboard):
         names = " & ".join(current_birthdays)
         w, h = draw.textsize(names, font=namefont)
         draw.text(
-            ((y_height - w) / 2, x_width - (10 + h)),
+            ((Y_HEIGHT - w) / 2, X_WIDTH - (10 + h)),
             names,
             (0, 0, 0),
             font=namefont,
@@ -394,7 +406,9 @@ class MappyBoi(Dashboard):
         )
         __black_white_image = MappyBoi.add_iss_passtime(__black_white_image, passtimes)
         # __black_white_image = MappyBoi.add_count_pages(__black_white_image)
-        __black_white_image, __red_white_image = MappyBoi.add_vaccination_progress_bar(__black_white_image, __red_white_image)
+        __black_white_image, __red_white_image = MappyBoi.add_vaccination_progress_bar(
+            __black_white_image, __red_white_image
+        )
         __black_white_image = MappyBoi.add_birthday(__black_white_image)
         __red_white_image = MappyBoi.add_weather_icon(__red_white_image, weather_state)
 
