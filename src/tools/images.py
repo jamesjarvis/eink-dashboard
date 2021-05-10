@@ -50,6 +50,27 @@ def rasterize(image: Image.Image) -> Image.Image:
     return newImg
 
 
+def to_black_and_red_image(bw_image: Image.Image, rw_image: Image.Image) -> Image.Image:
+    """This is really just to be used for dev, as it converts two images into a single one which the display cannot support"""
+    bw_pixels = list(bw_image.getdata())
+    rw_pixels = list(rw_image.getdata())
+
+    newPixels = []
+    for i in range(len(bw_pixels)):
+        if rw_pixels[i][0] == 0:
+            newPixel = (200, 0, 0)
+        elif bw_pixels[i][0] < 120:
+            newPixel = (0, 0, 0)
+        else:
+            newPixel = (255, 255, 255)
+        newPixels.append(newPixel)
+
+    # create a image and put data into it
+    newImg = Image.new(bw_image.mode, bw_image.size)
+    newImg.putdata(newPixels)
+    return newImg
+
+
 def subtract_top_from_bottom(bottomimg:  Image.Image, topimg:  Image.Image) ->  Image.Image:
     """Any pixels that are not white in the top layer are removed from the bottom layer"""
     bottompixels = list(bottomimg.getdata())

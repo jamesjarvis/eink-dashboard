@@ -2,6 +2,7 @@
 # -*- coding:utf-8 -*-
 import logging
 
+from src.tools.images import to_black_and_red_image
 from src.mappyboi import MappyBoi
 
 logging.basicConfig(
@@ -24,8 +25,9 @@ try:
 
     black_white, red_white = mappy_boi.build_images()
 
-    black_white.show()
-    red_white.show()
+    composite_img = to_black_and_red_image(black_white, red_white)
+
+    composite_img.show()
 
 except IOError as e:
     logging.info(e)
