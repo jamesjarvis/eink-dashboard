@@ -8,6 +8,7 @@ from typing import Tuple
 from PIL import Image, ImageDraw, ImageFont
 from settings import birthdays, climacell_api_key, latitude, longitude
 
+from .dashboard import Dashboard
 from .tools.apis import (
     get_birthdays,
     get_current_temp,
@@ -25,7 +26,13 @@ from .tools.apis import (
 )
 from .tools.fonts import opensans, weather
 from .tools.graphing import plot_time_data
-from .tools.images import subtract_top_from_bottom, to_bitmap, X_WIDTH, Y_HEIGHT
+from .tools.images import (
+    X_WIDTH,
+    Y_HEIGHT,
+    rasterize,
+    subtract_top_from_bottom,
+    to_bitmap,
+)
 from .tools.tiles import (
     deg2num,
     generate_3x5_image,
@@ -33,7 +40,6 @@ from .tools.tiles import (
     generate_metoffice_map,
 )
 from .tools.utils import get_current_time, get_time_epoch
-from .dashboard import Dashboard
 
 
 class MappyBoi(Dashboard):
@@ -292,20 +298,26 @@ class MappyBoi(Dashboard):
         first_width = vaccination_data_first_dose["value"] / UK_POP * Y_HEIGHT
         second_width = vaccination_data_second_dose["value"] / UK_POP * Y_HEIGHT
 
-        # Clear red space
+        # Clear red and black space
         rw_draw.rectangle(
             (0, 0, Y_HEIGHT, PROGRESS_BAR_SIZE),
             outline=None,
             fill=(255, 255, 255),
         )
-
         bw_draw.rectangle(
-            (0, 0, second_width, PROGRESS_BAR_SIZE),
+            (0, 0, Y_HEIGHT, PROGRESS_BAR_SIZE),
+            outline=None,
+            fill=(255, 255, 255),
+        )
+
+        # Draw progress bars with a slight white space at the bottom
+        bw_draw.rectangle(
+            (0, 0, second_width, PROGRESS_BAR_SIZE - 1),
             outline=None,
             fill=(0, 0, 0),
         )
         rw_draw.rectangle(
-            (second_width, 0, first_width, PROGRESS_BAR_SIZE),
+            (second_width, 0, first_width, PROGRESS_BAR_SIZE - 1),
             outline=None,
             fill=(0, 0, 0),
         )
@@ -416,5 +428,8 @@ class MappyBoi(Dashboard):
         __black_white_image = subtract_top_from_bottom(
             __black_white_image, __red_white_image
         )
+
+        # rasterize it
+        __red_white_image = rasterize(__red_white_image)
 
         return __black_white_image, __red_white_image
