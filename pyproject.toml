@@ -6,11 +6,11 @@ authors = ["James Jarvis <git@jamesjarvis.io>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.7.3"
 Pillow = "7.2.0"
 pytz = "2020.1"
-matplotlib = "3.2.2"
 requests = "2.24.0"
+matplotlib = "3.2.2"
 
 [tool.poetry.dev-dependencies]
 
