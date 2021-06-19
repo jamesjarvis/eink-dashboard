@@ -7,7 +7,7 @@ from typing import List, Tuple
 import pytz
 import requests
 
-from .utils import get_current_time, parse_datetime
+from .utils import get_current_time, parse_datetime, beautify_time_string
 
 
 def get_dad_joke() -> str:
@@ -195,3 +195,55 @@ def get_vaccinations_second_dose() -> dict:
     if r.status_code != 200:
         return None
     return r.json()["data"][0]
+
+class Station:
+    """
+    Train station
+    """
+    def __init__(self, description: str, public_time: str) -> None:
+        self.description: str = description
+        self.public_time: str = public_time
+
+class Service:
+    """
+    Train service, see https://www.realtimetrains.co.uk/about/developer/pull/docs/locationlist/
+    """
+    def __init__(self) -> None:
+        self.service_uid: str = None
+        self.run_date: datetime.date = None
+        self.booked_arrival: str = None
+        self.booked_departure: str = None
+        self.realtime_arrival: str = None
+        self.realtime_departure: str = None
+        self.origin: Station = None
+        self.destination: Station = None
+
+
+def get_train_departure_times(username: str, password: str, station_code: str) -> List[Service]:
+    url = f"https://api.rtt.io/api/v1/json/search/{station_code}"
+    r = requests.get(url, auth=(username, password))
+    if r.status_code != 200:
+        return None
+    services = r.json()["services"]
+    return_services = []
+    for service in services:
+        temp_s = Service()
+        temp_s.service_uid = service['serviceUid']
+        temp_s.run_date = datetime.datetime.strptime(service['runDate'], "%Y-%m-%d").date()
+        if "locationDetail" in service:
+            location_detail = service["locationDetail"]
+            # location = Station(service["locationDetail"][""])
+            temp_s.booked_arrival = beautify_time_string(location_detail["gbttBookedArrival"])
+            temp_s.booked_departure = beautify_time_string(location_detail["gbttBookedDeparture"])
+            temp_s.realtime_arrival = beautify_time_string(location_detail["realtimeArrival"])
+            temp_s.realtime_departure = beautify_time_string(location_detail["realtimeDeparture"])
+            temp_s.origin = Station(
+                location_detail["origin"][0]["description"],
+                beautify_time_string(location_detail["origin"][0]["publicTime"]),
+            )
+            temp_s.destination = Station(
+                location_detail["destination"][0]["description"],
+                beautify_time_string(location_detail["destination"][0]["publicTime"]),
+            )
+        return_services.append(temp_s)
+    return return_services

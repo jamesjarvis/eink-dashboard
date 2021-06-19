@@ -22,3 +22,7 @@ def parse_datetime(datetime_string, tz_from=pytz.utc, tz_to=pytz.timezone("Europ
 def convert_utc_to_local(date, tz_from=pytz.utc, tz_to=pytz.timezone("Europe/London")) -> datetime:
     """Simply converts the provided utc date to local timezone"""
     return date.astimezone(tz_to)
+
+def beautify_time_string(time: str) -> str:
+    """Changes 1210 to 12:10"""
+    return f"{time[:2]}:{time[2:]}"
