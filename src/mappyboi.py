@@ -3,13 +3,14 @@
 import logging
 from datetime import datetime
 from random import random
-from typing import Tuple
+from typing import List, Tuple
 
 from PIL import Image, ImageDraw, ImageFont
-from settings import birthdays, climacell_api_key, latitude, longitude
+from settings import birthdays, climacell_api_key, latitude, longitude, realtime_trains_username, realtime_trains_password, train_station
 
 from .dashboard import Dashboard
 from .tools.apis import (
+    Service,
     get_birthdays,
     get_current_temp,
     get_forecast,
@@ -18,6 +19,7 @@ from .tools.apis import (
     get_opinionated_aqi_status,
     get_precipitation_data,
     get_sunrise_and_sunset,
+    get_train_departure_times,
     get_vaccinations_first_dose,
     get_vaccinations_second_dose,
     get_weather_icon,
@@ -359,6 +361,39 @@ class MappyBoi(Dashboard):
         )
         return img
 
+    @staticmethod
+    def add_train_departures(img: Image.Image, redimg: Image.Image, services: List[Service]) -> Tuple[Image.Image, Image.Image]:
+        if not services:
+            print("no train services")
+            return img
+
+        # Filter services not going to london
+        services = filter(lambda item: "London" in item.destination.description, services)
+
+        draw = ImageDraw.Draw(img)
+        drawred = ImageDraw.Draw(redimg)
+        font = ImageFont.truetype(opensans, 16)
+
+        pos = 10
+        for service in services:
+            msg = f"{service.realtime_departure}: {service.destination.description}"
+            w, h = draw.textsize(msg, font=font)
+            draw.rectangle(
+                (0, pos, 10+w, pos + h), outline=None, fill=(255, 255, 255)
+            )
+            drawred.rectangle(
+                (0, pos, 10+w, pos + h), outline=None, fill=(255, 255, 255)
+            )
+            draw.text(
+                (10, pos),
+                msg,
+                (0, 0, 0),
+                font=font,
+            )
+            pos = pos + h
+
+        return img, redimg
+
     def build_images(self) -> Tuple[Image.Image, Image.Image]:
         """
         Builds two bitmap images, one for black/white and another for red/white.
@@ -404,6 +439,7 @@ class MappyBoi(Dashboard):
         sunrise, sunset = get_sunrise_and_sunset(forecast)
         passtimes = get_iss_passtime(latitude, longitude)
         weather_state = get_weather_icon(forecast)
+        train_departures = get_train_departure_times(realtime_trains_username, realtime_trains_password, train_station)
 
         precip_x, precip_y = get_precipitation_data(forecast)
         graph_img = plot_time_data(precip_x, precip_y)
@@ -417,6 +453,10 @@ class MappyBoi(Dashboard):
             __black_white_image, sunrise, sunset
         )
         __black_white_image = MappyBoi.add_iss_passtime(__black_white_image, passtimes)
+        __black_white_image, __red_white_image = MappyBoi.add_train_departures(
+            __black_white_image, __red_white_image,
+            train_departures,
+        )
         # __black_white_image = MappyBoi.add_count_pages(__black_white_image)
         __black_white_image, __red_white_image = MappyBoi.add_vaccination_progress_bar(
             __black_white_image, __red_white_image
