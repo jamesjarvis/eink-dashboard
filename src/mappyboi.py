@@ -382,13 +382,13 @@ class MappyBoi(Dashboard):
             msg = f"{service.realtime_departure}: {service.destination.description}"
             w, h = draw.textsize(msg, font=font)
             draw.rectangle(
-                (0, pos, 10+w, pos + h), outline=None, fill=(255, 255, 255)
+                (0, pos, 5+w, pos + h), outline=None, fill=(255, 255, 255)
             )
             drawred.rectangle(
-                (0, pos, 10+w, pos + h), outline=None, fill=(255, 255, 255)
+                (0, pos, 5+w, pos + h), outline=None, fill=(255, 255, 255)
             )
             draw.text(
-                (10, pos),
+                (5, pos),
                 msg,
                 (0, 0, 0),
                 font=font,
