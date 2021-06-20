@@ -217,6 +217,7 @@ class Service:
         self.realtime_departure: str = None
         self.origin: Station = None
         self.destination: Station = None
+        self.display_as: str = None
 
 
 def beautify_station_name(name: str) -> str:
@@ -225,6 +226,8 @@ def beautify_station_name(name: str) -> str:
     """
     if name == "London Charing Cross":
         return "London Charing X"
+    elif name == "London Cannon Street":
+        return "London Cannon St"
     return name
 
 
@@ -246,6 +249,7 @@ def get_train_departure_times(username: str, password: str, station_code: str) -
             temp_s.booked_departure = beautify_time_string(location_detail["gbttBookedDeparture"])
             temp_s.realtime_arrival = beautify_time_string(location_detail["realtimeArrival"])
             temp_s.realtime_departure = beautify_time_string(location_detail["realtimeDeparture"])
+            temp_s.display_as = location_detail["displayAs"]
             temp_s.origin = Station(
                 beautify_station_name(location_detail["origin"][0]["description"]),
                 beautify_time_string(location_detail["origin"][0]["publicTime"]),
