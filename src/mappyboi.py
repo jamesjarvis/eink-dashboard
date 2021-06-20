@@ -380,6 +380,8 @@ class MappyBoi(Dashboard):
         pos = 10
         for service in services:
             msg = f"{service.realtime_departure}: {service.destination.description}"
+            if service.display_as == "CANCELLED_CALL":
+                msg = f"{service.realtime_departure}: {service.destination.description} CNCL"
             w, h = draw.textsize(msg, font=font)
             draw.rectangle(
                 (0, pos, 5+w, pos + h), outline=None, fill=(255, 255, 255)
@@ -387,12 +389,20 @@ class MappyBoi(Dashboard):
             drawred.rectangle(
                 (0, pos, 5+w, pos + h), outline=None, fill=(255, 255, 255)
             )
-            draw.text(
-                (5, pos),
-                msg,
-                (0, 0, 0),
-                font=font,
-            )
+            if service.display_as == "CANCELLED_CALL":
+                drawred.text(
+                    (5, pos),
+                    msg,
+                    (0, 0, 0),
+                    font=font,
+                )
+            else:
+                draw.text(
+                    (5, pos),
+                    msg,
+                    (0, 0, 0),
+                    font=font,
+                )
             pos = pos + h
 
         return img, redimg
@@ -456,10 +466,6 @@ class MappyBoi(Dashboard):
             __black_white_image, sunrise, sunset
         )
         __black_white_image = MappyBoi.add_iss_passtime(__black_white_image, passtimes)
-        __black_white_image, __red_white_image = MappyBoi.add_train_departures(
-            __black_white_image, __red_white_image,
-            train_departures,
-        )
         # __black_white_image = MappyBoi.add_count_pages(__black_white_image)
         __black_white_image, __red_white_image = MappyBoi.add_vaccination_progress_bar(
             __black_white_image, __red_white_image
@@ -474,5 +480,10 @@ class MappyBoi(Dashboard):
 
         # rasterize it
         __red_white_image = rasterize(__red_white_image)
+
+        __black_white_image, __red_white_image = MappyBoi.add_train_departures(
+            __black_white_image, __red_white_image,
+            train_departures,
+        )
 
         return __black_white_image, __red_white_image
