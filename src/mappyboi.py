@@ -367,6 +367,9 @@ class MappyBoi(Dashboard):
             print("no train services")
             return img
 
+        # Limit to 8 departures
+        services = services[:8]
+
         # Filter services not going to london
         services = filter(lambda item: "London" in item.destination.description, services)
 
