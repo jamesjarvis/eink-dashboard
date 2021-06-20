@@ -219,6 +219,15 @@ class Service:
         self.destination: Station = None
 
 
+def beautify_station_name(name: str) -> str:
+    """
+    This simply returns a prettier / shorter name if it is known
+    """
+    if name == "London Charing Cross":
+        return "London Charing X"
+    return name
+
+
 def get_train_departure_times(username: str, password: str, station_code: str) -> List[Service]:
     url = f"https://api.rtt.io/api/v1/json/search/{station_code}"
     r = requests.get(url, auth=(username, password))
@@ -238,11 +247,11 @@ def get_train_departure_times(username: str, password: str, station_code: str) -
             temp_s.realtime_arrival = beautify_time_string(location_detail["realtimeArrival"])
             temp_s.realtime_departure = beautify_time_string(location_detail["realtimeDeparture"])
             temp_s.origin = Station(
-                location_detail["origin"][0]["description"],
+                beautify_station_name(location_detail["origin"][0]["description"]),
                 beautify_time_string(location_detail["origin"][0]["publicTime"]),
             )
             temp_s.destination = Station(
-                location_detail["destination"][0]["description"],
+                beautify_station_name(location_detail["destination"][0]["description"]),
                 beautify_time_string(location_detail["destination"][0]["publicTime"]),
             )
         return_services.append(temp_s)
