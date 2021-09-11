@@ -6,7 +6,7 @@ from random import random
 from typing import List, Tuple
 
 from PIL import Image, ImageDraw, ImageFont
-from settings import birthdays, climacell_api_key, latitude, longitude, realtime_trains_username, realtime_trains_password, train_station
+from settings import birthdays, tomorrow_api_key, latitude, longitude, realtime_trains_username, realtime_trains_password, train_station
 
 from .dashboard import Dashboard
 from .tools.apis import (
@@ -121,6 +121,9 @@ class MappyBoi(Dashboard):
 
     @staticmethod
     def add_aqi(img: Image.Image, quality) -> Image.Image:
+        if not quality or quality == "unknown":
+            return img
+
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype(opensans, 18)
         draw.text(
@@ -144,6 +147,8 @@ class MappyBoi(Dashboard):
         # sunrise > current, then sunrise
         # current > sunrise < sunset then sunset
         # current > sunset then sunrise
+        if not sunrise_time or not sunset_time:
+            return img
         sunthingtodraw = sunrise
         suntimetowrite = sunrise_time
         if current_time > sunrise_time and current_time < sunset_time:
@@ -197,7 +202,41 @@ class MappyBoi(Dashboard):
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype(weather, 50)
 
+        if icon == 0 or not icon:
+            return img
+
+        code_to_human = {
+            1000: "clear",
+            1001: "cloudy",
+            1100: "mostly_clear",
+            1101: "partly_cloudy",
+            1102: "mostly_cloudy",
+            2000: "fog",
+            2100: "fog_light",
+            3000: "light_wind",
+            3001: "wind",
+            3002: "strong_wind",
+            4000: "drizzle",
+            4001: "rain",
+            4200: "rain_light",
+            4201: "rain_heavy",
+            5000: "snow",
+            5001: "flurries",
+            5100: "snow_light",
+            5101: "snow_heavy",
+            6000: "freezing_drizzle",
+            6001: "freezing_rain",
+            6200: "freezing_rain_light",
+            6201: "freezing_rain_heavy",
+            7000: "ice_pellets",
+            7101: "ice_pellets_heavy",
+            7102: "ice_pellets_light",
+            8000: "tstorm",
+        }
         icons = {
+            "light_wind": "\uf021",
+            "wind": "\uf021",
+            "strong_wind": "\uf050",
             "freezing_rain_heavy": "\uf01a",
             "freezing_rain": "\uf01a",
             "freezing_rain_light": "\uf01a",
@@ -228,7 +267,7 @@ class MappyBoi(Dashboard):
 
         draw.text(
             (Y_HEIGHT - (75 + y_rand), (115 + x_rand)),
-            icons[icon],
+            icons[code_to_human[icon]],
             (0, 0, 0),
             font=font,
         )
@@ -446,7 +485,7 @@ class MappyBoi(Dashboard):
         __red_white_image = MappyBoi.remove_corner(__red_white_image)
 
         # Get additional shit
-        forecast = get_forecast(latitude, longitude, climacell_api_key)
+        forecast = get_forecast(latitude, longitude, tomorrow_api_key)
         temp = get_current_temp(forecast)
         aqi_status = get_opinionated_aqi_status(get_max_aqi(forecast))
         sunrise, sunset = get_sunrise_and_sunset(forecast)

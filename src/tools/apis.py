@@ -39,53 +39,73 @@ def get_iss_passtime(lat: float, lon: float, alt: int=50) -> dict:
 
 def get_forecast(lat: float, lon: float, api_key: str) -> dict:
     """
-    Gets forecast from climacell, example response as follows:
-    [{
-        "lat": 0.1,
-        "lon": 0.1,
-        "temp": {"value": 12.97, "units": "C"},
-        "precipitation": {"value": 4.0469, "units": "mm/hr"},
-        "sunrise": {"value": "2020-06-06T03:44:36.443Z"},
-        "sunset": {"value": "2020-06-06T20:11:48.212Z"},
-        "epa_aqi": {"value": 25},
-        "china_aqi": {"value": 14},
-        "pm25": {"value": 2, "units": "µg/m3"},
-        "pm10": {"value": 4, "units": "µg/m3"},
-        "o3": {"value": 28, "units": "ppb"},
-        "no2": {"value": 3, "units": "ppb"},
-        "observation_time": {"value": "2020-06-06T17:14:41.972Z"},
-        "weather_code": {"value": "rain"},
-    }]
+    Gets forecast from tomorrow.io, example response as follows:
+    {
+        "data":{
+            "timelines":[
+                {
+                    "timestep":"1m",
+                    "startTime":"2021-09-11T19:29:00Z",
+                    "endTime":"2021-09-11T22:29:00Z",
+                    "intervals":[
+                        {
+                            "startTime":"2021-09-11T19:29:00Z",
+                            "values":{
+                                "temperature":18.69,
+                                "precipitationIntensity":0,
+                                "weatherCode":1101
+                            }
+                        },
+                        {
+                            "startTime":"2021-09-11T19:30:00Z",
+                            "values":{
+                                "temperature":18.66,
+                                "precipitationIntensity":0,
+                                "weatherCode":1101
+                            }
+                        },
+                    ]
+                },
+            ]
+        }
+    }
     """
+    # TODO: Sunrise, Sunset and air quality metrics are fucked. Thanks climacell/tomorrow...
     current_time = get_current_time(pytz.utc)
     end_date = current_time + datetime.timedelta(hours=3)
     end_date.replace(microsecond=0).isoformat()
 
-    payload = {
-        "lat": lat,
-        "lon": lon,
+    querystring = {
         "apikey": api_key,
-        "unit_system": "si",
-        "timestep": 2,
-        "start_time": "now",
-        "end_time": end_date,
+    }
+    payload = {
+        "location": [lat, lon],
+        "units": "metric",
+        "timesteps": ["1m"],
+        # "startTime": "now",
+        "endTime": end_date.isoformat(),
         "fields": [
-            "temp",
-            "precipitation",
-            "sunrise",
-            "sunset",
-            "weather_code",
-            "pm25",
-            "pm10",
-            "o3",
-            "no2",
-            "epa_aqi",
+            "temperature",
+            "precipitationIntensity",
+            # "sunriseTime",
+            # "sunsetTime",
+            "weatherCode",
+            "particulateMatter25",
+            "particulateMatter10",
+            "pollutantO3",
+            "pollutantNO2",
+            "epaIndex",
         ],
     }
 
-    r = requests.get("https://api.climacell.co/v3/weather/nowcast", params=payload)
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+    }
+    r = requests.post("https://api.tomorrow.io/v4/timelines", headers=headers, params=querystring, json=payload)
     if r.status_code != 200:
         logging.error("Bad response from weather forecasting service", r.status_code)
+        return None
     return r.json()
 
 
@@ -93,12 +113,16 @@ def get_forecast(lat: float, lon: float, api_key: str) -> dict:
 
 
 def get_sunrise_and_sunset(payload) -> Tuple[datetime.datetime, datetime.datetime]:
+    # TODO: Find a way to get sunrise/set info again.
+    return (None, None)
     sunrise = parse_datetime(payload[0]["sunrise"]["value"])
     sunset = parse_datetime(payload[0]["sunset"]["value"])
     return (sunrise, sunset)
 
 
 def get_max_aqi(payload) -> int:
+    # TODO: Find a way to get aqi info again.
+    return -1
     aqi = 0
     for i in payload:
         temp = i["epa_aqi"]["value"] or -1
@@ -108,11 +132,15 @@ def get_max_aqi(payload) -> int:
 
 
 def get_weather_icon(payload) -> float:
-    return payload[0]["weather_code"]["value"]
+    if not payload:
+        return 0
+    return payload["data"]["timelines"][0]["intervals"][0]["values"]["weatherCode"]
 
 
 def get_current_temp(payload) -> int:
-    return payload[0]["temp"]["value"]
+    if not payload:
+        return 0
+    return payload["data"]["timelines"][0]["intervals"][0]["values"]["temperature"]
 
 
 def get_opinionated_aqi_status(n: int) -> str:
@@ -132,10 +160,11 @@ def get_opinionated_aqi_status(n: int) -> str:
 def get_precipitation_data(payload) -> Tuple[list, list]:
     x = list()
     y = list()
-    for e in payload:
-        temp_date = parse_datetime(e["observation_time"]["value"], tz_to=pytz.utc)
+    # payload["data"]["timelines"][0]["intervals"][0]["values"]["temperature"]
+    for e in payload["data"]["timelines"][0]["intervals"]:
+        temp_date = parse_datetime(e["startTime"], tz_to=pytz.utc)
         x.append(temp_date)
-        temp_precip = e["precipitation"]["value"]
+        temp_precip = e["values"]["precipitationIntensity"]
         temp_precip = (
             # 0 if temp_precip is None else float(math.ceil(temp_precip * 2)) / 2
             0

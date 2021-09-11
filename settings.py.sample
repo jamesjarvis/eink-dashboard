@@ -1,5 +1,6 @@
 openweathermap_api_key=""
 climacell_api_key = ""
+tomorrow_api_key = ""
 longitude = 0
 latitude = 0
 realtime_trains_username = ""
