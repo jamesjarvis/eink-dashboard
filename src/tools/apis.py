@@ -265,27 +265,32 @@ def get_train_departure_times(username: str, password: str, station_code: str) -
     r = requests.get(url, auth=(username, password))
     if r.status_code != 200:
         return None
-    services = r.json()["services"]
     return_services = []
-    for service in services:
-        temp_s = Service()
-        temp_s.service_uid = service['serviceUid']
-        temp_s.run_date = datetime.datetime.strptime(service['runDate'], "%Y-%m-%d").date()
-        if "locationDetail" in service:
-            location_detail = service["locationDetail"]
-            # location = Station(service["locationDetail"][""])
-            temp_s.booked_arrival = beautify_time_string(location_detail["gbttBookedArrival"])
-            temp_s.booked_departure = beautify_time_string(location_detail["gbttBookedDeparture"])
-            temp_s.realtime_arrival = beautify_time_string(location_detail["realtimeArrival"])
-            temp_s.realtime_departure = beautify_time_string(location_detail["realtimeDeparture"])
-            temp_s.display_as = location_detail["displayAs"]
-            temp_s.origin = Station(
-                beautify_station_name(location_detail["origin"][0]["description"]),
-                beautify_time_string(location_detail["origin"][0]["publicTime"]),
-            )
-            temp_s.destination = Station(
-                beautify_station_name(location_detail["destination"][0]["description"]),
-                beautify_time_string(location_detail["destination"][0]["publicTime"]),
-            )
-        return_services.append(temp_s)
+    try:
+        services = r.json()["services"]
+        for service in services:
+            temp_s = Service()
+            temp_s.service_uid = service['serviceUid']
+            temp_s.run_date = datetime.datetime.strptime(service['runDate'], "%Y-%m-%d").date()
+            if "locationDetail" in service:
+                location_detail = service["locationDetail"]
+                # location = Station(service["locationDetail"][""])
+                temp_s.booked_arrival = beautify_time_string(location_detail["gbttBookedArrival"])
+                temp_s.booked_departure = beautify_time_string(location_detail["gbttBookedDeparture"])
+                arrivalTime = location_detail["realtimeArrival"] if "realtimeArrival" in location_detail else location_detail["gbttBookedArrival"]
+                temp_s.realtime_arrival = beautify_time_string(arrivalTime)
+                departureTime = location_detail["realtimeDeparture"] if "realtimeDeparture" in location_detail else location_detail["gbttBookedDeparture"]
+                temp_s.realtime_departure = beautify_time_string(departureTime)
+                temp_s.display_as = location_detail["displayAs"]
+                temp_s.origin = Station(
+                    beautify_station_name(location_detail["origin"][0]["description"]),
+                    beautify_time_string(location_detail["origin"][0]["publicTime"]),
+                )
+                temp_s.destination = Station(
+                    beautify_station_name(location_detail["destination"][0]["description"]),
+                    beautify_time_string(location_detail["destination"][0]["publicTime"]),
+                )
+            return_services.append(temp_s)
+    except Exception as e:
+        logging.warn("Failed to parse train times", e)
     return return_services
