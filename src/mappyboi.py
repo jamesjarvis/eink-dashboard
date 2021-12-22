@@ -488,7 +488,7 @@ class MappyBoi(Dashboard):
         forecast = get_forecast(latitude, longitude, tomorrow_api_key)
         temp = get_current_temp(forecast)
         aqi_status = get_opinionated_aqi_status(get_max_aqi(forecast))
-        sunrise, sunset = get_sunrise_and_sunset(forecast)
+        sunrise, sunset = get_sunrise_and_sunset(latitude, longitude)
         passtimes = get_iss_passtime(latitude, longitude)
         weather_state = get_weather_icon(forecast)
         train_departures = get_train_departure_times(realtime_trains_username, realtime_trains_password, train_station)
