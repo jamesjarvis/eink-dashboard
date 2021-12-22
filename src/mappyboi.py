@@ -22,6 +22,7 @@ from .tools.apis import (
     get_train_departure_times,
     get_vaccinations_first_dose,
     get_vaccinations_second_dose,
+    get_vaccinations_third_dose,
     get_weather_icon,
     get_web_graph_count_links,
     get_web_graph_count_pages,
@@ -335,9 +336,13 @@ class MappyBoi(Dashboard):
         vaccination_data_second_dose = get_vaccinations_second_dose()
         if not vaccination_data_second_dose:
             return black_white_img, red_white_img
-        # First should be naturally larger than second
+        vaccination_data_third_dose = get_vaccinations_third_dose()
+        if not vaccination_data_third_dose:
+            return black_white_img, red_white_img
+        # First should be naturally larger than second and third
         first_width = vaccination_data_first_dose["value"] / UK_POP * Y_HEIGHT
         second_width = vaccination_data_second_dose["value"] / UK_POP * Y_HEIGHT
+        third_width = vaccination_data_third_dose["value"] / UK_POP * Y_HEIGHT
 
         # Clear red and black space
         rw_draw.rectangle(
@@ -352,8 +357,10 @@ class MappyBoi(Dashboard):
         )
 
         # Draw progress bars with a slight white space at the bottom
+        # To represent third dose, we will have the third dose as "white", so the
+        # second dose bar will start at third dose length. You still following?
         bw_draw.rectangle(
-            (0, 0, second_width, PROGRESS_BAR_SIZE - 1),
+            (third_width, 0, second_width, PROGRESS_BAR_SIZE - 1),
             outline=None,
             fill=(0, 0, 0),
         )

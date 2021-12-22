@@ -225,6 +225,18 @@ def get_vaccinations_second_dose() -> dict:
         return None
     return r.json()["data"][0]
 
+def get_vaccinations_third_dose() -> dict:
+    """
+    This should return a dict with:
+    date (str):   currentDateString
+    value (int):  numberOfThirdDoseVaccinations
+    """
+    url = "https://api.coronavirus.data.gov.uk/v1/data?filters=areaName=United%2520Kingdom;areaType=overview&latestBy=cumPeopleVaccinatedThirdInjectionByPublishDate&structure=%7B%22date%22:%22date%22,%22value%22:%22cumPeopleVaccinatedThirdInjectionByPublishDate%22%7D&format=json&page=1"
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()["data"][0]
+
 class Station:
     """
     Train station
