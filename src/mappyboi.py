@@ -411,7 +411,7 @@ class MappyBoi(Dashboard):
     def add_train_departures(img: Image.Image, redimg: Image.Image, services: List[Service]) -> Tuple[Image.Image, Image.Image]:
         if not services:
             print("no train services")
-            return img
+            return img, redimg
 
         # Limit to 8 departures
         services = services[:8]

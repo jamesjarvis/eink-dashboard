@@ -52,3 +52,7 @@ except KeyboardInterrupt:
     logging.info("ctrl + c:")
     epd7in5b_V3.epdconfig.module_exit()
     exit()
+
+except Exception as e:
+    logging.info("Failed to execute mappyboi :(")
+    logging.error(e)

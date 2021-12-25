@@ -35,3 +35,7 @@ except IOError as e:
 except KeyboardInterrupt:
     logging.info("ctrl + c:")
     exit()
+
+except Exception as e:
+    logging.info("Failed to execute mappyboi :(")
+    logging.error(e)

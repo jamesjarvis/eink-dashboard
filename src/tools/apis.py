@@ -311,6 +311,8 @@ def get_train_departure_times(username: str, password: str, station_code: str) -
     return_services = []
     try:
         services = r.json()["services"]
+        if not services:
+            return None
         for service in services:
             temp_s = Service()
             temp_s.service_uid = service['serviceUid']
@@ -336,4 +338,5 @@ def get_train_departure_times(username: str, password: str, station_code: str) -
             return_services.append(temp_s)
     except Exception as e:
         logging.warn("Failed to parse train times", e)
+        return None
     return return_services
