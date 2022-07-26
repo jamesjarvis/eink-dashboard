@@ -141,7 +141,10 @@ def get_sunrise_and_sunset(lat: float, lon: float) -> Tuple[datetime.datetime, d
     headers = {
         "Accept": "application/json",
     }
-    r = requests.get(url, headers=headers, params=querystring)
+    try:
+        r = requests.get(url, headers=headers, params=querystring)
+    except Exception as e:
+        return (None, None)
     if r.status_code != 200:
         logging.error("Bad response from sunrise-sunset service", r.status_code)
         return (None, None)
@@ -239,7 +242,10 @@ def get_vaccinations_first_dose() -> dict:
     value (int):  numberOfFirstDoseVaccinations
     """
     url = "https://api.coronavirus.data.gov.uk/v1/data?filters=areaName=United%2520Kingdom;areaType=overview&latestBy=cumPeopleVaccinatedFirstDoseByPublishDate&structure=%7B%22date%22:%22date%22,%22value%22:%22cumPeopleVaccinatedFirstDoseByPublishDate%22%7D&format=json&page=1"
-    r = requests.get(url)
+    try:
+        r = requests.get(url)
+    except Exception as e:
+        return None
     if r.status_code != 200:
         return None
     return r.json()["data"][0]
@@ -251,7 +257,10 @@ def get_vaccinations_second_dose() -> dict:
     value (int):  numberOfSecondDoseVaccinations
     """
     url = "https://api.coronavirus.data.gov.uk/v1/data?filters=areaName=United%2520Kingdom;areaType=overview&latestBy=cumPeopleVaccinatedSecondDoseByPublishDate&structure=%7B%22date%22:%22date%22,%22value%22:%22cumPeopleVaccinatedSecondDoseByPublishDate%22%7D&format=json&page=1"
-    r = requests.get(url)
+    try:
+        r = requests.get(url)
+    except Exception as e:
+        return None
     if r.status_code != 200:
         return None
     return r.json()["data"][0]
@@ -263,7 +272,10 @@ def get_vaccinations_third_dose() -> dict:
     value (int):  numberOfThirdDoseVaccinations
     """
     url = "https://api.coronavirus.data.gov.uk/v1/data?filters=areaName=United%2520Kingdom;areaType=overview&latestBy=cumPeopleVaccinatedThirdInjectionByPublishDate&structure=%7B%22date%22:%22date%22,%22value%22:%22cumPeopleVaccinatedThirdInjectionByPublishDate%22%7D&format=json&page=1"
-    r = requests.get(url)
+    try:
+        r = requests.get(url)
+    except Exception as e:
+        return None
     if r.status_code != 200:
         return None
     return r.json()["data"][0]
@@ -305,7 +317,10 @@ def beautify_station_name(name: str) -> str:
 
 def get_train_departure_times(username: str, password: str, station_code: str) -> List[Service]:
     url = f"https://api.rtt.io/api/v1/json/search/{station_code}"
-    r = requests.get(url, auth=(username, password))
+    try:
+        r = requests.get(url, auth=(username, password))
+    except Exception as e:
+        return None
     if r.status_code != 200:
         return None
     return_services = []
