@@ -2,7 +2,9 @@
 
 use std::process::Command;
 
-fn main() {
+use reqwest::Client;
+
+fn create_image() {
     let imgx = 800;
     let imgy = 800;
 
@@ -47,4 +49,43 @@ fn main() {
             .arg("fractal.png")
             .output()
             .expect("failed to execute process");
+}
+
+
+async fn make_requests(client: Client) -> Result<String, reqwest::Error>{
+    const URL_DAD_JOKE: &str = "https://icanhazdadjoke.com/";
+
+    let dad_joke = client.get(URL_DAD_JOKE)
+        .header("Accept", "text/plain")
+        .send();
+
+    let dad_joke_2 = client.get(URL_DAD_JOKE)
+        .header("Accept", "text/plain")
+        .send();
+
+    let reqs = futures::join!(dad_joke, dad_joke_2);
+    let dad_joke_resp = reqs.0?.text().await?;
+    let dad_joke_resp_2 = reqs.1?.text().await?;
+
+    let mut resp = dad_joke_resp.to_owned();
+    resp.push_str("\n");
+    resp.push_str(&dad_joke_resp_2);
+
+    return Ok(resp)
+}
+
+
+#[tokio::main]
+async fn main() {
+    // Testing image creation.
+    // create_image();
+
+    // Testing request making.
+    let client = Client::new();
+
+    let output = make_requests(client);
+
+    let output = futures::executor::block_on(output);
+
+    eprintln!("{}", output.unwrap())
 }
