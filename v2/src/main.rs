@@ -4,7 +4,7 @@ use std::process::Command;
 
 use reqwest::Client;
 
-fn create_image() {
+fn _create_image() {
     let imgx = 800;
     let imgy = 800;
 
@@ -52,26 +52,40 @@ fn create_image() {
 }
 
 
-async fn make_requests(client: Client) -> Result<String, reqwest::Error>{
-    const URL_DAD_JOKE: &str = "https://icanhazdadjoke.com/";
+struct ApiData {
+    dad_joke: String
+}
 
-    let dad_joke = client.get(URL_DAD_JOKE)
-        .header("Accept", "text/plain")
-        .send();
+impl ApiData {
+    pub fn new() -> Self {
+        return ApiData { dad_joke: String::new() }
+    }
+    pub fn to_string(&self) -> String {
+        return self.dad_joke.to_owned()
+    }
+    pub async fn fetch(&mut self, client: Client) -> Result<bool, reqwest::Error> {
+        const URL_DAD_JOKE: &str = "https://icanhazdadjoke.com/";
 
-    let dad_joke_2 = client.get(URL_DAD_JOKE)
-        .header("Accept", "text/plain")
-        .send();
+        let dad_joke = client.get(URL_DAD_JOKE)
+            .header("Accept", "text/plain")
+            .send();
 
-    let reqs = futures::join!(dad_joke, dad_joke_2);
-    let dad_joke_resp = reqs.0?.text().await?;
-    let dad_joke_resp_2 = reqs.1?.text().await?;
+        let dad_joke_2 = client.get(URL_DAD_JOKE)
+            .header("Accept", "text/plain")
+            .send();
 
-    let mut resp = dad_joke_resp.to_owned();
-    resp.push_str("\n");
-    resp.push_str(&dad_joke_resp_2);
+        let reqs = futures::join!(dad_joke, dad_joke_2);
+        let dad_joke_resp = reqs.0?.text().await?;
+        let dad_joke_resp_2 = reqs.1?.text().await?;
+    
+        let mut resp = dad_joke_resp.to_owned();
+        resp.push_str("\n");
+        resp.push_str(&dad_joke_resp_2);
 
-    return Ok(resp)
+        self.dad_joke = resp;
+    
+        return Ok(true)
+    }
 }
 
 
@@ -83,9 +97,7 @@ async fn main() {
     // Testing request making.
     let client = Client::new();
 
-    let output = make_requests(client);
-
-    let output = futures::executor::block_on(output);
-
-    eprintln!("{}", output.unwrap())
+    let mut api_data = ApiData::new();
+    let fetched = futures::executor::block_on(api_data.fetch(client));
+    eprintln!("{}, {}", fetched.unwrap(), api_data.to_string());
 }
