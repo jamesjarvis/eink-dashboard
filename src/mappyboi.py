@@ -171,14 +171,16 @@ class MappyBoi(Dashboard):
 
     @staticmethod
     def add_iss_passtime(img: Image.Image, passtimes) -> Image.Image:
+        if not passtimes or len(passtimes["response"]) == 0:
+            return img
+
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype(opensans, 18)
 
         text = "??"
-        if passtimes and len(passtimes["response"]) > 0:
-            next_pass = passtimes["response"][0]["risetime"]
-            next_pass_time = get_time_epoch(next_pass)
-            text = next_pass_time.strftime("%-d %b, %H:%M")
+        next_pass = passtimes["response"][0]["risetime"]
+        next_pass_time = get_time_epoch(next_pass)
+        text = next_pass_time.strftime("%-d %b, %H:%M")
 
         draw.text(
             (Y_HEIGHT - 240, 170),
