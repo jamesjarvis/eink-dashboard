@@ -33,7 +33,8 @@ def get_iss_passtime(lat: float, lon: float, alt: int=50) -> dict:
 
     r = requests.get("http://api.open-notify.org/iss-pass.json", params=payload)
     if r.status_code != 200:
-        logging.error("Bad response from weather forecasting service", r.status_code)
+        logging.error(f"Bad response from weather forecasting service: {r.status_code}")
+        return None
     return r.json()
 
 
