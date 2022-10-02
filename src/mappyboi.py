@@ -475,15 +475,19 @@ class MappyBoi(Dashboard):
         )
 
         logging.info("Weather image downloading...")
-        __red_white_image = to_bitmap(
-            generate_3x5_image(
-                X_TILE,
-                Y_TILE,
-                self.zoom,
-                generate_metoffice_map,
-            ),
-            20,
-        )
+        __red_white_image = Image.new(mode="P", size=(X_WIDTH, Y_HEIGHT), color=(255, 255, 255))
+        try:
+            __red_white_image = to_bitmap(
+                generate_3x5_image(
+                    X_TILE,
+                    Y_TILE,
+                    self.zoom,
+                    generate_metoffice_map,
+                ),
+                20,
+            )
+        except Exception as e:
+            logging.error("failed to get rain map", e)
 
         logging.info("Getting additional forecast...")
         # Paint an area for this info
