@@ -356,3 +356,16 @@ def get_train_departure_times(username: str, password: str, station_code: str) -
         logging.warn("Failed to parse train times", e)
         return None
     return return_services
+
+def send_error(api_key: str, msg: str, dashboard_mode: str, exception: Exception()) -> None:
+    url = f'https://maker.ifttt.com/trigger/eink_dashboard/with/key/{api_key}'
+    payload = {
+        "name": "og_dashboard",
+        "msg": msg,
+        "mode": dashboard_mode,
+        "exception": str(exception),
+    }
+    try:
+        requests.post(url, json=payload, timeout=10)
+    except Exception as e:
+        logging.error("Failed to send error to ifttt", e)
