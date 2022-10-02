@@ -358,6 +358,11 @@ def get_train_departure_times(username: str, password: str, station_code: str) -
     return return_services
 
 def send_error(api_key: str, msg: str, dashboard_mode: str, exception: Exception()) -> None:
+    """
+    send_error sends an error message to the IFTTT webhook "eink_dashboard",
+    along with relevant json data such as the dashboard_mode ("mappyboi" or otherwise),
+    and the message / exception encountered.
+    """
     url = f'https://maker.ifttt.com/trigger/eink_dashboard/with/key/{api_key}'
     payload = {
         "name": "og_dashboard",
