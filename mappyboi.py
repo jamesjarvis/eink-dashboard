@@ -5,6 +5,8 @@ import logging
 from random import random
 
 from src.mappyboi import MappyBoi
+from settings import ifttt_key
+from src.tools.apis import send_error
 
 from waveshare_epd import epd7in5b_V3
 
@@ -47,6 +49,7 @@ try:
 
 except IOError as e:
     logging.info(e)
+    send_error(ifttt_key, "Received IO Error", "mappyboi", e)
 
 except KeyboardInterrupt:
     logging.info("ctrl + c:")
@@ -56,3 +59,4 @@ except KeyboardInterrupt:
 except Exception as e:
     logging.info("Failed to execute mappyboi :(")
     logging.error(e)
+    send_error(ifttt_key, "Received unknown exception", "mappyboi", e)
