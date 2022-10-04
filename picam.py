@@ -8,9 +8,25 @@ from inkydev import InkyDev, PIN_INTERRUPT
 import inky.inky_uc8159 as inky
 import RPi.GPIO as GPIO
 
+def take_picture():
+    # Create the in-memory stream
+    stream = io.BytesIO()
+    with picamera.PiCamera() as camera:
+        camera.capture(stream, format='jpeg')
+    # "Rewind" the stream to the beginning so we can read its content
+    stream.seek(0)
+    image = Image.open(stream)
+    
+    # Resize and flip image for the display.
+    image = image.resize(display.resolution)
+    image = image.transpose(Image.FLIP_LEFT_RIGHT)
+
+    return image
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(PIN_INTERRUPT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+
+SATURATION = 0.5
 
 # Set up InkyDev first to power on the display
 inkydev = InkyDev()
@@ -37,21 +53,14 @@ def handle_interrupt(pin):
 
         set_all_leds(255, 255, 255)
 
-        # Create the in-memory stream
-        stream = io.BytesIO()
-        with picamera.PiCamera() as camera:
-            camera.capture(stream, format='jpeg')
-        # "Rewind" the stream to the beginning so we can read its content
-        stream.seek(0)
-        image = Image.open(stream)
-        image = image.resize(display.resolution)
-
-        set_all_leds(0, 0, 50)
-
-        print("Picture taken, displaying...")
-
         try:
-            display.set_image(image)
+            image = take_picture()
+
+            set_all_leds(0, 0, 50)
+
+            print("Picture taken, displaying...")
+
+            display.set_image(image, saturation=SATURATION)
             display.show()
         except Exception as e:
             print("Failed to set the image...")
