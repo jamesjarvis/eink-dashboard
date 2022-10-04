@@ -15,12 +15,18 @@ GPIO.setup(PIN_INTERRUPT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 # Set up InkyDev first to power on the display
 inkydev = InkyDev()
 
+def set_all_leds(r, g, b):
+    inkydev.set_led(0, r, g, b)
+    inkydev.set_led(1, r, g, b)
+    inkydev.set_led(2, r, g, b)
+    inkydev.set_led(3, r, g, b)
+    inkydev.update()
+
+# Initialise all LEDs to basically off
+set_all_leds(5, 0, 0)
+
 # Set up the Inky Display
 display = inky.Inky((600, 448))
-
-# Create our drawing surface (a PIL Image)
-image = Image.new("P", display.resolution)
-draw = ImageDraw.Draw(image)
 
 def handle_interrupt(pin):
     button_a, button_b, button_c, button_d, changed = inkydev.read_buttons()
@@ -29,11 +35,7 @@ def handle_interrupt(pin):
         print("Taking a picture...")
         # Now we want to try and take a pic? I guess...
 
-        inkydev.set_led(0, 255, 255, 255)
-        inkydev.set_led(1, 255, 255, 255)
-        inkydev.set_led(2, 255, 255, 255)
-        inkydev.set_led(3, 255, 255, 255)
-        inkydev.update()
+        set_all_leds(255, 255, 255)
 
         # Create the in-memory stream
         stream = io.BytesIO()
@@ -44,16 +46,14 @@ def handle_interrupt(pin):
         image = Image.open(stream)
         image.resize(display.resolution)
 
+        set_all_leds(0, 0, 255)
+
         print("Picture taken, displaying...")
 
         display.set_image(image)
         display.show()
 
-        inkydev.set_led(0, 0, 0, 0)
-        inkydev.set_led(1, 0, 0, 0)
-        inkydev.set_led(2, 0, 0, 0)
-        inkydev.set_led(3, 0, 0, 0)
-        inkydev.update()
+        set_all_leds(5, 0, 0)
 
         print("Picture displayed...")
 
