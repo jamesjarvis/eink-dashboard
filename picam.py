@@ -23,7 +23,7 @@ def set_all_leds(r, g, b):
     inkydev.update()
 
 # Initialise all LEDs to basically off
-set_all_leds(5, 0, 0)
+set_all_leds(0, 5, 0)
 
 # Set up the Inky Display
 display = inky.Inky((600, 448))
@@ -44,16 +44,22 @@ def handle_interrupt(pin):
         # "Rewind" the stream to the beginning so we can read its content
         stream.seek(0)
         image = Image.open(stream)
-        image.resize(display.resolution)
+        image = image.resize(display.resolution)
 
-        set_all_leds(0, 0, 255)
+        set_all_leds(0, 0, 50)
 
         print("Picture taken, displaying...")
 
-        display.set_image(image)
-        display.show()
+        try:
+            display.set_image(image)
+            display.show()
+        except Exception as e:
+            print("Failed to set the image...")
+            print(e)
+            set_all_leds(255, 0, 0)
+            return
 
-        set_all_leds(5, 0, 0)
+        set_all_leds(0, 5, 0)
 
         print("Picture displayed...")
 
