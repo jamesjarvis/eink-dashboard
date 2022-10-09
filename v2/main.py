@@ -1,5 +1,16 @@
 #!/usr/bin/env python3
 
+# Welcome to eink-display-v2!
+# 
+# This is a script that is designed to load on boot on a Raspberry Pi Zero connected to a
+# Pimoroni Inky display (600 X 448) 7 Colour with a Pi camera attached.
+# 
+# Current features (mapped to each of the 4 buttons):
+# 1 [Landscape]:    XKCD Daily cartoon, updates every 12 hours.
+# 2 [Any]:          Photo Mode, takes a pic and displays.
+# 2 [Any]:          Photo Mode, takes a pic and displays.
+# 2 [Any]:          Photo Mode with 3 second delay, takes a pic and displays.
+
 import io
 import picamera
 import signal
