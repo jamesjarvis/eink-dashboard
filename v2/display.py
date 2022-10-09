@@ -93,7 +93,7 @@ class Display():
 
       print("Comic fetched, displaying...")
 
-      self.inky_display.set_image(image, saturation=SATURATION)
+      self.inky_display.set_image(image)
       self.inky_display.show()
     except Exception as e:
       print("Failed to set the image...")
