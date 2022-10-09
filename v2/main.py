@@ -26,9 +26,17 @@ display = Display(inky_display)
 def handle_interrupt(pin):
     button_a, button_b, button_c, button_d, changed = inkydev.read_buttons()
 
-    if changed and (button_a or button_b or button_c or button_d):
-        # On any button press, take a picture.
+    if not changed:
+        return
+
+    if button_a:
+        return
+    if button_b or button_c:
         display.take_picture(0)
+        return
+    if button_d:
+        display.take_picture(4)
+        return
 
 
 GPIO.add_event_detect(PIN_INTERRUPT, GPIO.FALLING, callback=handle_interrupt)
