@@ -4,6 +4,7 @@ from inkydev import InkyDev
 from time import sleep
 
 import camera
+import api
 
 SIZE_X, SIZE_Y = 600, 448
 SATURATION = 0.5
@@ -23,7 +24,7 @@ class Display():
     setup_leds will set all LEDs to their default colours.
     """
     # Initialise all LEDs to basically off
-    display.set_all_leds(0, 5, 0)
+    self.set_all_leds(0, 5, 0)
 
   def set_all_leds(self, r, g, b, update=True):
     """
@@ -40,7 +41,7 @@ class Display():
     """
     take_picture takes a picture with the onboard camera,
     after the given delay (in seconds).
-    Then it will update the onboard delay with the picture.
+    Then it will update the onboard display with the picture.
     """
     print("Taking a picture...")
 
@@ -77,7 +78,26 @@ class Display():
       self.set_all_leds(255, 0, 0)
       return
 
-    self.set_all_leds(0, 5, 0)
-
     print("Picture displayed...")
+
+  def xkcd(self):
+    """
+    xkcd will display a random XKCD comic every day.
+    """
+    print("Fetching XKCD...")
+    
+    try:
+      image = api.xkcd()
+
+      self.set_all_leds(0, 0, 50)
+
+      print("Comic fetched, displaying...")
+
+      self.inky_display.set_image(image, saturation=SATURATION)
+      self.inky_display.show()
+    except Exception as e:
+      print("Failed to set the image...")
+      print(e)
+      self.set_all_leds(255, 0, 0)
+      return
   
