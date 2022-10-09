@@ -2,7 +2,7 @@ import io
 import picamera
 from PIL import Image
 
-def take_picture() -> Image:
+def take_picture() -> Image.Image:
     """
     take_picture actually takes the picture, returning a PIL Image.
     """
