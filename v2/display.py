@@ -1,6 +1,8 @@
 
 import inky.inky_uc8159 as inky
 from inkydev import InkyDev
+from time import sleep
+
 import camera
 
 SIZE_X, SIZE_Y = 600, 448
@@ -23,7 +25,7 @@ class Display():
     # Initialise all LEDs to basically off
     display.set_all_leds(0, 5, 0)
 
-  def set_all_leds(self, r, g, b):
+  def set_all_leds(self, r, g, b, update=True):
     """
     set_all_leds sets all LED's to the given colour.
     """
@@ -31,7 +33,8 @@ class Display():
     self.inky_dev.set_led(1, r, g, b)
     self.inky_dev.set_led(2, r, g, b)
     self.inky_dev.set_led(3, r, g, b)
-    self.inky_dev.update()
+    if update:
+      self.inky_dev.update()
 
   def take_picture(self, delay:int):
     """
@@ -40,6 +43,21 @@ class Display():
     Then it will update the onboard delay with the picture.
     """
     print("Taking a picture...")
+
+    # Start the countdown
+    for i in range(delay, 0, -1):
+      self.set_all_leds(0, 0, 0, update=False)
+      if i > 0:
+        self.inky_dev.set_led(0, 255, 255, 255)
+      if i > 1:
+        self.inky_dev.set_led(1, 255, 255, 255)
+      if i > 2:
+        self.inky_dev.set_led(2, 255, 255, 255)
+      if i > 3:
+        self.inky_dev.set_led(3, 255, 255, 255)
+      self.inky_dev.update()
+      sleep(1)
+
     # Now we want to try and take a pic? I guess...
 
     self.set_all_leds(255, 255, 255)
