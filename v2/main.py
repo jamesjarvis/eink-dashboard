@@ -6,10 +6,10 @@
 # Pimoroni Inky display (600 X 448) 7 Colour with a Pi camera attached.
 # 
 # Current features (mapped to each of the 4 buttons):
-# 1 [Landscape]:    XKCD Daily cartoon, updates every 12 hours.
+# 0 [Landscape]:    XKCD Daily cartoon, updates every 12 hours.
+# 1 [Any]:          Photo Mode, takes a pic and displays.
 # 2 [Any]:          Photo Mode, takes a pic and displays.
-# 2 [Any]:          Photo Mode, takes a pic and displays.
-# 2 [Any]:          Photo Mode with 3 second delay, takes a pic and displays.
+# 3 [Any]:          Photo Mode with 3 second delay, takes a pic and displays.
 
 import io
 import picamera
@@ -19,7 +19,10 @@ from inkydev import InkyDev, PIN_INTERRUPT
 import inky.inky_uc8159 as inky
 import RPi.GPIO as GPIO
 
-def take_picture():
+def take_picture() -> Image:
+    """
+    take_picture actually takes the picture, returning a PIL Image.
+    """
     # Create the in-memory stream
     stream = io.BytesIO()
     with picamera.PiCamera() as camera:
@@ -43,6 +46,9 @@ SATURATION = 0.5
 inkydev = InkyDev()
 
 def set_all_leds(r, g, b):
+    """
+    set_all_leds sets all LED's to the given colour.
+    """
     inkydev.set_led(0, r, g, b)
     inkydev.set_led(1, r, g, b)
     inkydev.set_led(2, r, g, b)
