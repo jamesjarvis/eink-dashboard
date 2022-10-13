@@ -23,8 +23,16 @@ class Display():
     """
     setup_leds will set all LEDs to their default colours.
     """
-    # Initialise all LEDs to basically off
-    self.set_all_leds(0, 5, 0)
+    # Initialise LEDs for their program function
+    # 0: XKCD   (white)
+    # 1: Photo  (blue)
+    # 2: Photo  (blue)
+    # 3: Photo with 3 sec delay (green)
+    self.inky_dev.set_led(0, 5, 5, 5)
+    self.inky_dev.set_led(1, 0, 0, 5)
+    self.inky_dev.set_led(2, 0, 0, 5)
+    self.inky_dev.set_led(3, 0, 5, 0)
+    self.inky_dev.update()
 
   def set_all_leds(self, r, g, b, update=True):
     """
@@ -70,6 +78,7 @@ class Display():
 
       print("Picture taken, displaying...")
 
+      image = image.resize(self.inky_display.resolution)
       self.inky_display.set_image(image, saturation=SATURATION)
       self.inky_display.show()
     except Exception as e:
@@ -100,4 +109,6 @@ class Display():
       print(e)
       self.set_all_leds(255, 0, 0)
       return
+
+    print("Comic displayed...")
   

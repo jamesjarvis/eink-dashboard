@@ -12,25 +12,25 @@
 # 3 [Any]:          Photo Mode with 3 second delay, takes a pic and displays.
 
 import signal
-import datetime
 import time
+from datetime import datetime
 from inkydev import PIN_INTERRUPT
 import RPi.GPIO as GPIO
 
-from .display import Display
+from display import Display
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(PIN_INTERRUPT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 # Set up the display logic.
-display = Display(inky_display)
+display = Display()
 
 XKCD_MODE_ACTIVE = True
 XKCD_MODE_LAST_UPDATED = None
 XKCD_MODE_INTERVAL_SECONDS = 60 * 60 * 12 # 12 hours.
 
 def handle_interrupt(pin):
-    button_a, button_b, button_c, button_d, changed = inkydev.read_buttons()
+    button_a, button_b, button_c, button_d, changed = display.inky_dev.read_buttons()
 
     if not changed:
         return
@@ -60,6 +60,7 @@ while True:
     if not XKCD_MODE_LAST_UPDATED or (current_time - XKCD_MODE_LAST_UPDATED).total_seconds() > XKCD_MODE_INTERVAL_SECONDS:
         display.xkcd()
         XKCD_MODE_LAST_UPDATED = datetime.utcnow()
+        display.setup_leds()
         continue
 
 signal.pause()
