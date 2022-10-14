@@ -25,7 +25,7 @@ GPIO.setup(PIN_INTERRUPT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 # Set up the display logic.
 display = Display()
 
-XKCD_MODE_ACTIVE = True
+XKCD_MODE_ACTIVE = False
 XKCD_MODE_LAST_UPDATED = None
 XKCD_MODE_INTERVAL_SECONDS = 60 * 60 * 12 # 12 hours.
 
@@ -53,7 +53,7 @@ def handle_interrupt(pin):
 GPIO.add_event_detect(PIN_INTERRUPT, GPIO.FALLING, callback=handle_interrupt)
 
 while True:
-    time.sleep(1)
+    time.sleep(30)
     if not XKCD_MODE_ACTIVE:
         continue
     current_time = datetime.utcnow()
