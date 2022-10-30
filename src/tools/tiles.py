@@ -15,7 +15,10 @@ TILE_DIMENSION = 256
 def get_update_time() -> datetime:
     current_time = datetime.datetime.utcnow().replace(microsecond=0, second=0)
     current_time = current_time - datetime.timedelta(
-        minutes=10 + (current_time.minute % 5)
+        minutes=10
+    )
+    current_time = current_time - datetime.timedelta(
+        minutes=(current_time.minute % 10)
     )
     return current_time
 
@@ -25,7 +28,8 @@ def generate_base_map(zoom: int, xtile: int, ytile: int, api_key: str=None) -> s
 
 
 def generate_weather_map(zoom: int, xtile: int, ytile: int, api_key: str=None) -> str:
-    return f"https://tile.openweathermap.org/map/precipitation_new/{zoom}/{xtile}/{ytile}.png?appid={api_key}"
+    current_time = get_update_time()
+    return f"https://sat.owm.io/maps/2.0/radar/{zoom}/{xtile}/{ytile}?appid={api_key}&day={current_time.strftime('%Y-%m-%dT%H:%M')}"
 
 
 def generate_metoffice_map(zoom: int, xtile: int, ytile: int, api_key: str=None) -> str:
@@ -70,7 +74,7 @@ def generate_3x5_image(xtile: int, ytile: int, zoom: int, generate_url, api_key:
             # print(xtile + x, ytile + y)
             r = requests.get(generate_url(zoom, xtile + x, ytile + y, api_key))
             if r.status_code != 200:
-                logging.info("failed download!!")
+                logging.info(f"failed download!! code is {r.status_code}")
             i = Image.open(BytesIO(r.content))
             i = i.resize((176, 176), resample=Image.BICUBIC)
             image_arr.append(i)
