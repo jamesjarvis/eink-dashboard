@@ -33,3 +33,7 @@ with open("quotes", "a") as f:
     if i < len(all_quotes):
       f.write('\n')
 
+# Export length of quotes, used for quicker random lookups.
+with open("quotes_len", "w") as f:
+  f.write(str(len(all_quotes)))
+
