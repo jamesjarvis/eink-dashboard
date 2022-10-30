@@ -6,3 +6,9 @@ The goal is to have a small low powered device with an e-ink display that period
 For this I'll be using a Pimoroni Badger2040 as the device.
 
 For the quotes datasource, the scraper source will be contained within `./scraper/`.
+
+```bash
+poetry install
+
+poetry run python3 scraper.py
+```
