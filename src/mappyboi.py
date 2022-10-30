@@ -6,7 +6,7 @@ from random import random
 from typing import List, Tuple
 
 from PIL import Image, ImageDraw, ImageFont
-from settings import birthdays, tomorrow_api_key, latitude, longitude, realtime_trains_username, realtime_trains_password, train_station
+from settings import birthdays, tomorrow_api_key, latitude, longitude, realtime_trains_username, realtime_trains_password, train_station, openweathermap_api_key
 
 from .dashboard import Dashboard
 from .tools.apis import (
@@ -40,7 +40,7 @@ from .tools.tiles import (
     deg2num,
     generate_3x5_image,
     generate_base_map,
-    generate_metoffice_map,
+    generate_weather_map,
 )
 from .tools.utils import get_current_time, get_time_epoch
 
@@ -480,7 +480,8 @@ class MappyBoi(Dashboard):
                 X_TILE,
                 Y_TILE,
                 self.zoom,
-                generate_metoffice_map,
+                generate_weather_map,
+                api_key=openweathermap_api_key,
             ),
             20,
         )
