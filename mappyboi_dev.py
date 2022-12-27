@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
 import logging
+import traceback
 
 from src.tools.images import to_black_and_red_image
 from src.mappyboi import MappyBoi
@@ -41,5 +42,6 @@ except KeyboardInterrupt:
 
 except Exception as e:
     logging.info("Failed to execute mappyboi :(")
-    logging.error(e)
+    logging.exception(e)
+    logging.error(traceback.format_exc())
     send_error(ifttt_key, "Received unknown exception", "mappyboi", e)
