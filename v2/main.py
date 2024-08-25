@@ -9,7 +9,7 @@
 # A [Portrait]:     Photo Mode with 3 second delay, takes a pic and displays.
 # B [Portrait]:     Photo Mode, takes a pic and displays.
 # C [Portrait]:     Photo Mode, takes a pic and displays.
-# D [Portrait]:     Photo Mode, takes a pic and displays.
+# D [Portrait]:     Redraw Mode, just updates the display.
 
 import signal
 import time
@@ -58,11 +58,7 @@ def handle_interrupt(pin):
         display.led_countdown_flash(countdown_seconds=0.5)
         photo = camera.take_picture()
         storage.set_latest_image(photo)
-    # If Button D pressed, take a photo with a 500ms delay.
-    elif button_d:
-        display.led_countdown_flash(countdown_seconds=0.5)
-        photo = camera.take_picture()
-        storage.set_latest_image(photo)
+    # If Button D pressed, redraw without taking a photo.
 
     # In all cases, redraw the display.
     display.redraw()
@@ -75,10 +71,15 @@ while True:
     time.sleep(30)
     current_time = datetime.utcnow()
 
-    # Update every update_interval_minutes
-    if not display.last_redraw_time or current_time > (display.last_redraw_time + timedelta(
+    # If the last redraw time was within the last update_interval_minutes, skip redraw.
+    if display.last_redraw_time and current_time < (display.last_redraw_time + timedelta(
         minutes = float(storage.get_settings()["update_interval_minutes"]),
     )):
-        display.redraw()
+        continue
+
+    # Update data
+
+    # Redraw display
+    display.redraw()
 
 signal.pause()
