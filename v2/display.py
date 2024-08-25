@@ -92,7 +92,16 @@ class Display:
         logging.debug("Redrawing display")
         self.led_set_all(0, 0, 50)
         
-        # TODO: Draw display.
+        # Background image.
+        image = self.storage.get_latest_image()
+        image = image.resize(self.inky_display.resolution)
+
+        # Draw overlay on top.
+        # TODO
+
+        # Draw onto display.
+        self.inky_display.set_image(image, saturation=SATURATION)
+        self.inky_display.show()
 
         self.last_redraw_time = datetime.datetime.utcnow()
         logging.debug("Redraw complete")
