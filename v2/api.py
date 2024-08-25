@@ -95,7 +95,7 @@ def get_forecast(lat: float, lon: float, api_key: str) -> WeatherData:
     for interval in response_json["data"]["timelines"][0]["intervals"]:
         forecasts.append(
             PointForecast(
-                start_time=interval["startTime"],
+                start_time=parse_datetime(interval["startTime"]),
                 temperature=interval["values"]["temperature"],
                 precipitation_intensity=interval["values"]["precipitationIntensity"],
                 weather_code=interval["values"]["weatherCode"],
@@ -105,9 +105,11 @@ def get_forecast(lat: float, lon: float, api_key: str) -> WeatherData:
     return WeatherData(
         last_updated=current_time,
         forecasts=forecasts,
+        sunrise=None,
+        sunset=None,
     )
 
-def get_sunrise_and_sunset(lat: float, lon: float) -> Tuple[datetime.datetime, datetime.datetime]:
+def get_sunrise_and_sunset(lat: float, lon: float) -> tuple[datetime.datetime, datetime.datetime]:
     """
     Gets sunrise/set from an api in the following format:
     {

@@ -31,31 +31,36 @@ class Storage:
 
     def get_settings(self) -> dict:
         settings = {}
-        with open(self.setting_filename, "r") as f:
-            settings = json.load(f)
+        try:
+            with open(self.setting_filename, "r") as f:
+                settings = json.load(f)
+        except Exception as e:
+            return settings
         return settings
 
     def get_weather_data(self) -> WeatherData:
-        weather_data = WeatherData()
-        with open(self.weather_data_filename, "r") as f:
-            weather_data_json = json.load(f)
-            forecasts = []
-            for forecast_json in weather_data_json["forecasts"]:
-                forecasts.append(
-                    PointForecast(
-                        start_time=parse_datetime(forecast_json["start_time"]),
-                        temperature=forecast_json["temperature"],
-                        precipitation_intensity=forecast_json[
-                            "precipitation_intensity"
-                        ],
-                        weather_code=forecast_json["weather_code"],
-                    ),
+        try:
+            with open(self.weather_data_filename, "r") as f:
+                weather_data_json = json.load(f)
+                forecasts = []
+                for forecast_json in weather_data_json["forecasts"]:
+                    forecasts.append(
+                        PointForecast(
+                            start_time=parse_datetime(forecast_json["start_time"]),
+                            temperature=forecast_json["temperature"],
+                            precipitation_intensity=forecast_json[
+                                "precipitation_intensity"
+                            ],
+                            weather_code=forecast_json["weather_code"],
+                        ),
+                    )
+                return WeatherData(
+                    last_updated=parse_datetime(weather_data_json["last_updated"]),
+                    forecasts=forecasts,
                 )
-            weather_data = WeatherData(
-                last_updated=parse_datetime(weather_data_json["last_updated"]),
-                forecasts=forecasts,
-            )
-        return weather_data
+        except Exception as e:
+            return None
+        return None
 
     def set_weather_data(self, data: WeatherData):
         """
@@ -91,27 +96,29 @@ class Storage:
         return None
 
     def get_train_data(self) -> TrainData:
-        train_data = TrainData()
-        with open(self.train_data_filename, "r") as f:
-            train_data_json = json.load(f)
-            departures = []
-            for departure_json in train_data_json["departures"]:
-                departures.append(
-                    Departure(
-                        booked_arrival=departure_json["booked_arrival"],
-                        booked_departure=departure_json["booked_departure"],
-                        realtime_arrival=departure_json["realtime_arrival"],
-                        realtime_departure=departure_json["realtime_departure"],
-                        station_origin=departure_json["station_origin"],
-                        station_departure=departure_json["station_departure"],
-                        display_as=departure_json["display_as"],
-                    ),
+        try:
+            with open(self.train_data_filename, "r") as f:
+                train_data_json = json.load(f)
+                departures = []
+                for departure_json in train_data_json["departures"]:
+                    departures.append(
+                        Departure(
+                            booked_arrival=departure_json["booked_arrival"],
+                            booked_departure=departure_json["booked_departure"],
+                            realtime_arrival=departure_json["realtime_arrival"],
+                            realtime_departure=departure_json["realtime_departure"],
+                            station_origin=departure_json["station_origin"],
+                            station_departure=departure_json["station_departure"],
+                            display_as=departure_json["display_as"],
+                        ),
+                    )
+                return TrainData(
+                    last_updated=parse_datetime(departure_json["last_updated"]),
+                    departures=departures,
                 )
-            train_data = TrainData(
-                last_updated=parse_datetime(departure_json["last_updated"]),
-                departures=departures,
-            )
-        return train_data
+        except Exception as e:
+            return None
+        return None
 
     def set_train_data(self, train_data: TrainData):
         """
