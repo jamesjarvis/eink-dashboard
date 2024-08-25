@@ -1,7 +1,8 @@
-from .datatypes import WeatherData
+from datatypes import WeatherData, PointForecast
 import json
 from PIL import Image
 import os
+from utils import parse_datetime
 
 
 class Storage:
@@ -33,11 +34,57 @@ class Storage:
         return settings
 
     def get_weather_data(self) -> WeatherData:
-        # TODO
-        return None
+        weather_data = WeatherData()
+        with open(self.weather_data_filename, "r") as f:
+            weather_data_json = json.load(f)
+            forecasts = []
+            for forecast_json in weather_data_json["forecasts"]:
+                forecasts.append(
+                    PointForecast(
+                        start_time=parse_datetime(forecast_json["start_time"]),
+                        temperature=forecast_json["temperature"],
+                        precipitation_intensity=forecast_json[
+                            "precipitation_intensity"
+                        ],
+                        weather_icon=forecast_json["weather_icon"],
+                    ),
+                )
+            weather_data = WeatherData(
+                last_updated=parse_datetime(weather_data_json["last_updated"]),
+                forecasts=forecasts,
+            )
+        return weather_data
 
     def set_weather_data(self, data: WeatherData):
-        # TODO
+        """
+        Store as:
+        {
+            "last_updated": "",
+            "forecasts": [
+                {
+                    "start_time": "",
+                    "temperature": 0,
+                    "precipitation_intensity": 0,
+                    "weather_icon": 0,
+                },
+            ]
+        }
+        """
+        forecasts = []
+        for forecast in data.forecasts:
+            forecasts.append(
+                {
+                    "start_time": forecast.start_time.isoformat(),
+                    "temperature": forecast.temperature,
+                    "precipitation_intensity": forecast.precipitation_intensity,
+                    "weather_icon": forecast.weather_icon,
+                },
+            )
+        weather_data_json = {
+            "last_updated": data.last_updated.isoformat(),
+        }
+        with open(self.weather_data_filename, "w") as f:
+            json.dump(weather_data_json, f, indent=2)
         return None
 
     def get_latest_image(self) -> Image.Image:
