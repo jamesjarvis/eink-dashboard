@@ -93,7 +93,11 @@ while True:
     storage.set_weather_data(weather_data)
 
     # Update train data
-    # TODO
+    train_data = api.get_train_departure_times(
+        username=settings["realtime_trains_username"],
+        password=settings["realtime_trains_password"],
+        station_code=settings["train_station"],
+    )
 
     # Redraw display
     display.redraw()

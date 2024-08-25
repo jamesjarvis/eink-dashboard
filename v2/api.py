@@ -1,6 +1,6 @@
 from io import BytesIO
 from PIL import Image
-from datatypes import WeatherData, PointForecast
+from datatypes import WeatherData, PointForecast, TrainData, Departure
 from utils import parse_datetime
 import requests
 import datetime
@@ -147,3 +147,53 @@ def get_sunrise_and_sunset(lat: float, lon: float) -> Tuple[datetime.datetime, d
     sunrise = parse_datetime(payload["results"]["sunrise"])
     sunset = parse_datetime(payload["results"]["sunset"])
     return (sunrise, sunset)
+
+def beautify_time_string(time: str) -> str:
+    """Changes 1210 to 12:10"""
+    return f"{time[:2]}:{time[2:]}"
+
+def beautify_station_name(name: str) -> str:
+    """
+    This simply returns a prettier / shorter name if it is known
+    """
+    if name == "London Charing Cross":
+        return "London Charing X"
+    elif name == "London Cannon Street":
+        return "London Cannon St"
+    return name
+
+
+def get_train_departure_times(username: str, password: str, station_code: str) -> TrainData:
+    url = f"https://api.rtt.io/api/v1/json/search/{station_code}"
+    try:
+        r = requests.get(url, auth=(username, password))
+    except Exception as e:
+        return None
+    if r.status_code != 200:
+        return None
+    departures = []
+    try:
+        services = r.json()["services"]
+        if not services:
+            return None
+        for service in services:
+            if "locationDetail" not in service:
+                continue
+            location_detail = service["locationDetail"]
+            departure = Departure(
+                booked_arrival=beautify_time_string(location_detail["gbttBookedArrival"]),
+                booked_departure=beautify_time_string(location_detail["gbttBookedDeparture"]),
+                realtime_arrival=beautify_time_string(location_detail["realtimeArrival"] if "realtimeArrival" in location_detail else location_detail["gbttBookedArrival"]),
+                realtime_departure=beautify_time_string(location_detail["realtimeDeparture"] if "realtimeDeparture" in location_detail else location_detail["gbttBookedDeparture"]),
+                station_origin=beautify_station_name(location_detail["origin"][0]["description"]),
+                station_departure=beautify_station_name(location_detail["destination"][0]["description"]),
+                display_as=location_detail["displayAs"],
+            )
+            departures.append(departure)
+    except Exception as e:
+        logging.warn("Failed to parse train times", e)
+        return None
+    return TrainData(
+        last_updated=datetime.datetime.utcnow(),
+        departures=departures,
+    )
