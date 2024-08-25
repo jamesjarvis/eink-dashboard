@@ -1,6 +1,7 @@
 from io import BytesIO
 from PIL import Image
 from datatypes import WeatherData, PointForecast
+from utils import parse_datetime
 import requests
 import datetime
 import logging
@@ -105,3 +106,44 @@ def get_forecast(lat: float, lon: float, api_key: str) -> WeatherData:
         last_updated=current_time,
         forecasts=forecasts,
     )
+
+def get_sunrise_and_sunset(lat: float, lon: float) -> Tuple[datetime.datetime, datetime.datetime]:
+    """
+    Gets sunrise/set from an api in the following format:
+    {
+        "results":{
+            "sunrise":"2021-12-22T08:00:00+00:00",
+            "sunset":"2021-12-22T15:00:00+00:00",
+            "solar_noon":"2021-12-22T11:00:00+00:00",
+            "day_length":30000,
+            "civil_twilight_begin":"2021-12-22T07:00:00+00:00",
+            "civil_twilight_end":"2021-12-22T16:00:00+00:00",
+            "nautical_twilight_begin":"2021-12-22T06:00:00+00:00",
+            "nautical_twilight_end":"2021-12-22T17:00:00+00:00",
+            "astronomical_twilight_begin":"2021-12-22T05:00:00+00:00",
+            "astronomical_twilight_end":"2021-12-22T17:00:00+00:00"
+        },
+        "status":"OK"
+    }
+    """
+    url = f"https://api.sunrise-sunset.org/json"
+    querystring = {
+        "date": "today",
+        "formatted": 0,
+        "lat": lat,
+        "lng": lon,
+    }
+    headers = {
+        "Accept": "application/json",
+    }
+    try:
+        r = requests.get(url, headers=headers, params=querystring)
+    except Exception as e:
+        return (None, None)
+    if r.status_code != 200:
+        logging.error("Bad response from sunrise-sunset service", r.status_code)
+        return (None, None)
+    payload = r.json()
+    sunrise = parse_datetime(payload["results"]["sunrise"])
+    sunset = parse_datetime(payload["results"]["sunset"])
+    return (sunrise, sunset)

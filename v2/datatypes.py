@@ -25,4 +25,6 @@ class PointForecast:
 @dataclass
 class WeatherData:
     last_updated: datetime.datetime
+    sunrise: datetime.datetime
+    sunset: datetime.datetime
     forecasts: list[PointForecast]

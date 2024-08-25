@@ -13,6 +13,7 @@
 
 import signal
 import time
+import logging
 from datetime import datetime, timedelta
 from inkydev import PIN_INTERRUPT
 import RPi.GPIO as GPIO
@@ -20,6 +21,7 @@ import RPi.GPIO as GPIO
 from display import Display
 from storage import Storage
 import camera
+import api
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(PIN_INTERRUPT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -77,7 +79,21 @@ while True:
     )):
         continue
 
-    # Update data
+    # Update weather data
+    settings = storage.get_settings()
+    weather_data = api.get_forecast(
+        lat=settings["latitude"],
+        lon=settings["longitude"],
+        api_key=settings["tomorrow_api_key"],
+    )
+    weather_data.sunrise, weather_data.sunset = api.get_sunrise_and_sunset(
+        lat=settings["latitude"],
+        lon=settings["longitude"],
+    )
+    storage.set_weather_data(weather_data)
+
+    # Update train data
+    # TODO
 
     # Redraw display
     display.redraw()
