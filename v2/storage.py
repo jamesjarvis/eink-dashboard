@@ -1,6 +1,7 @@
 from .datatypes import WeatherData
 import json
 from PIL import Image
+import os
 
 
 class Storage:
@@ -18,8 +19,12 @@ class Storage:
     def __init__(
         self,
         settings_filename: str = "settings.json",
+        latest_image_filename: str = "latest_photo.png",
+        weather_data_filename: str = "weather_data.json",
     ):
         self.setting_filename = settings_filename
+        self.latest_image_filename = latest_image_filename
+        self.weather_data_filename = weather_data_filename
 
     def get_settings(self) -> dict:
         settings = {}
@@ -36,17 +41,11 @@ class Storage:
         return None
 
     def get_latest_image(self) -> Image.Image:
-        # TODO
-        return None
+        # If no latest image found, return a black image.
+        if not os.path.isfile(self.latest_image_filename):
+            return Image.new("RGB", (448, 600), "black")
+        return Image.open(self.latest_image_filename)
 
     def set_latest_image(self, image: Image.Image):
-        # TODO
-        return None
-
-    def get_xkcd_image(self) -> Image.Image:
-        # TODO
-        return None
-
-    def set_xkcd_image(self, image: Image.Image):
-        # TODO
+        image.save(self.latest_image_filename, format="PNG")
         return None
