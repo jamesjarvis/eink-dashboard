@@ -3,6 +3,7 @@ from io import BytesIO
 from PIL import Image
 
 
+# deprecated: This will no longer be maintained.
 def xkcd() -> Image.Image:
     """
     xkcd will fetch a random XKCD comic, and return as a PIL.Image.
