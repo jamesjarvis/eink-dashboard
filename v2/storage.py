@@ -46,7 +46,7 @@ class Storage:
                         precipitation_intensity=forecast_json[
                             "precipitation_intensity"
                         ],
-                        weather_icon=forecast_json["weather_icon"],
+                        weather_code=forecast_json["weather_code"],
                     ),
                 )
             weather_data = WeatherData(
@@ -65,7 +65,7 @@ class Storage:
                     "start_time": "",
                     "temperature": 0,
                     "precipitation_intensity": 0,
-                    "weather_icon": 0,
+                    "weather_code": 0,
                 },
             ]
         }
@@ -77,7 +77,7 @@ class Storage:
                     "start_time": forecast.start_time.isoformat(),
                     "temperature": forecast.temperature,
                     "precipitation_intensity": forecast.precipitation_intensity,
-                    "weather_icon": forecast.weather_icon,
+                    "weather_code": forecast.weather_code,
                 },
             )
         weather_data_json = {
