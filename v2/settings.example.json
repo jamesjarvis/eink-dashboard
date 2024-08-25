@@ -1,0 +1,17 @@
+{
+  "tomorrow_api_key": "",
+  "latitude": 0,
+  "longitude": 0,
+  "realtime_trains_username": "",
+  "realtime_trains_password": "",
+  "train_station": "",
+  "birthdays": {
+    "month": {
+      "1": {
+        "day": {
+          "10": ["Bob"]
+        }
+      }
+    }
+  }
+}
