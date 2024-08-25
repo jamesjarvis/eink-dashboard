@@ -12,6 +12,12 @@ SATURATION = 0.5
 class Display():
   """
   Display contains all logic for driving the InkyDev display.
+  Fundamentally we have a "background" and a "overlay" component to the UI.
+  The background is an image, that is set to the total size of the display, and the overlay
+  is a section of the display roughly 1/3rd the height of the display, from the bottom.
+  It will contain:
+  - Weather (bottom left)
+  - Train times + important days (bottom right)
   """
   def __init__(self):
     self.inky_display = inky.Inky((SIZE_X, SIZE_Y))

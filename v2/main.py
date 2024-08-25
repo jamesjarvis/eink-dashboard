@@ -35,6 +35,7 @@ def handle_interrupt(pin):
     if not changed:
         return
 
+    # button_a sets to xkcd mode and instantly refreshes the background.
     if button_a:
         XKCD_MODE_ACTIVE = True
         display.xkcd()
@@ -50,6 +51,7 @@ def handle_interrupt(pin):
     return
 
 
+# handle_interrupt can be called to run a button specific event (i.e. taking a photo)
 GPIO.add_event_detect(PIN_INTERRUPT, GPIO.FALLING, callback=handle_interrupt)
 
 while True:

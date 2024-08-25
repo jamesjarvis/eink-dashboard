@@ -1,6 +1,6 @@
 # V2 Eink Display
 
-This is intended to be ran on a raspberry pi zero connected with a pi zero camer and the pimoroni InkyDev board.
+This is intended to be ran on a raspberry pi zero connected with a pi zero camera and the pimoroni InkyDev board.
 
 Connect via ssh, then run deploy.sh.
 
