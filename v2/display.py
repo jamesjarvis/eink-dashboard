@@ -1,9 +1,12 @@
 import inky.inky_uc8159 as inky
 from inkydev import InkyDev
 from time import sleep
+import logging
 
 import camera
 import api
+
+from storage import Storage
 
 SIZE_X, SIZE_Y = 600, 448
 SATURATION = 0.5
@@ -22,9 +25,10 @@ class Display:
     The display is in portrait mode.
     """
 
-    def __init__(self):
+    def __init__(self, storage: Storage):
         self.inky_display = inky.Inky((SIZE_X, SIZE_Y))
         self.inky_dev = InkyDev()
+        self.storage = storage
 
         self.led_reset_to_default()
 
@@ -33,11 +37,11 @@ class Display:
         setup_leds will set all LEDs to their default colours.
         """
         # Initialise LEDs for their program function
-        # 0: XKCD   (white)
+        # 0: Photo  (blue)
         # 1: Photo  (blue)
         # 2: Photo  (blue)
         # 3: Photo with 3 sec delay (green)
-        self.inky_dev.set_led(0, 5, 5, 5)
+        self.inky_dev.set_led(0, 0, 0, 5)
         self.inky_dev.set_led(1, 0, 0, 5)
         self.inky_dev.set_led(2, 0, 0, 5)
         self.inky_dev.set_led(3, 0, 5, 0)
@@ -54,16 +58,12 @@ class Display:
         if update:
             self.inky_dev.update()
 
-    def take_picture(self, delay: int):
+    def led_countdown_flash(self, countdown_seconds: float):
         """
-        take_picture takes a picture with the onboard camera,
-        after the given delay (in seconds).
-        Then it will update the onboard display with the picture.
+        led_countdown_flash counts down for the provided seconds,
+        then sets all LEDs to bright white as a "flash"
         """
-        print("Taking a picture...")
-
-        # Start the countdown
-        for i in range(delay, 0, -1):
+        for i in range(4, 0, -1):
             self.led_set_all(0, 0, 0, update=False)
             if i > 0:
                 self.inky_dev.set_led(0, 255, 255, 255)
@@ -74,11 +74,29 @@ class Display:
             if i > 3:
                 self.inky_dev.set_led(3, 255, 255, 255)
             self.inky_dev.update()
-            sleep(1)
+            sleep(countdown_seconds/4)
 
-        # Now we want to try and take a pic? I guess...
-
+        # Camera flash, set to bright white
         self.led_set_all(255, 255, 255)
+
+    def redraw(self):
+        """
+        redraw redraws the display with the latest available information.
+        """
+        # Set all LEDs to a low blue colour to indicate a refresh is happening.
+        logging.debug("Redrawing display")
+        self.led_set_all(0, 0, 50)
+        
+        logging.debug("Redraw complete")
+
+    def take_picture(self, delay: int):
+        """
+        take_picture takes a picture with the onboard camera,
+        after the given delay (in seconds).
+        Then it will update the onboard display with the picture.
+        """
+        logging.info("Taking a new picture...")
+        self.led_countdown_flash(delay)
 
         try:
             image = camera.take_picture()
@@ -95,28 +113,3 @@ class Display:
             print(e)
             self.led_set_all(255, 0, 0)
             return
-
-        print("Picture displayed...")
-
-    def xkcd(self):
-        """
-        xkcd will display a random XKCD comic every day.
-        """
-        print("Fetching XKCD...")
-
-        try:
-            image = api.xkcd()
-
-            self.led_set_all(0, 0, 50)
-
-            print("Comic fetched, displaying...")
-
-            self.inky_display.set_image(image)
-            self.inky_display.show()
-        except Exception as e:
-            print("Failed to set the image...")
-            print(e)
-            self.led_set_all(255, 0, 0)
-            return
-
-        print("Comic displayed...")
