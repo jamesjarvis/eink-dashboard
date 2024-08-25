@@ -11,7 +11,7 @@ SATURATION = 0.5
 
 class Display:
     """
-    Display contains all logic for driving the InkyDev display.
+    Display contains all logic for driving the InkyDev display and LEDs.
     Fundamentally we have a "background" and a "overlay" component to the UI.
     The background is an image, that is set to the total size of the display, and the overlay
     is a section of the display roughly 1/3rd the height of the display, from the bottom.
@@ -26,9 +26,9 @@ class Display:
         self.inky_display = inky.Inky((SIZE_X, SIZE_Y))
         self.inky_dev = InkyDev()
 
-        self.setup_leds()
+        self.led_reset_to_default()
 
-    def setup_leds(self):
+    def led_reset_to_default(self):
         """
         setup_leds will set all LEDs to their default colours.
         """
@@ -43,7 +43,7 @@ class Display:
         self.inky_dev.set_led(3, 0, 5, 0)
         self.inky_dev.update()
 
-    def set_all_leds(self, r, g, b, update=True):
+    def led_set_all(self, r, g, b, update=True):
         """
         set_all_leds sets all LED's to the given colour.
         """
@@ -64,7 +64,7 @@ class Display:
 
         # Start the countdown
         for i in range(delay, 0, -1):
-            self.set_all_leds(0, 0, 0, update=False)
+            self.led_set_all(0, 0, 0, update=False)
             if i > 0:
                 self.inky_dev.set_led(0, 255, 255, 255)
             if i > 1:
@@ -78,12 +78,12 @@ class Display:
 
         # Now we want to try and take a pic? I guess...
 
-        self.set_all_leds(255, 255, 255)
+        self.led_set_all(255, 255, 255)
 
         try:
             image = camera.take_picture()
 
-            self.set_all_leds(0, 0, 50)
+            self.led_set_all(0, 0, 50)
 
             print("Picture taken, displaying...")
 
@@ -93,7 +93,7 @@ class Display:
         except Exception as e:
             print("Failed to set the image...")
             print(e)
-            self.set_all_leds(255, 0, 0)
+            self.led_set_all(255, 0, 0)
             return
 
         print("Picture displayed...")
@@ -107,7 +107,7 @@ class Display:
         try:
             image = api.xkcd()
 
-            self.set_all_leds(0, 0, 50)
+            self.led_set_all(0, 0, 50)
 
             print("Comic fetched, displaying...")
 
@@ -116,7 +116,7 @@ class Display:
         except Exception as e:
             print("Failed to set the image...")
             print(e)
-            self.set_all_leds(255, 0, 0)
+            self.led_set_all(255, 0, 0)
             return
 
         print("Comic displayed...")

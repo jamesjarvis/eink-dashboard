@@ -48,7 +48,7 @@ def handle_interrupt(pin):
         XKCD_MODE_ACTIVE = False
         display.take_picture(4)
 
-    display.setup_leds()
+    display.led_reset_to_default()
     return
 
 
@@ -67,7 +67,7 @@ while True:
     ):
         display.xkcd()
         XKCD_MODE_LAST_UPDATED = datetime.utcnow()
-        display.setup_leds()
+        display.led_reset_to_default()
         continue
 
 signal.pause()
