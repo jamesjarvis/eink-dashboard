@@ -98,6 +98,7 @@ while True:
         password=settings["realtime_trains_password"],
         station_code=settings["train_station"],
     )
+    storage.set_train_data(train_data)
 
     # Redraw display
     display.redraw()
