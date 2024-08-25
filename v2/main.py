@@ -6,68 +6,79 @@
 # Pimoroni Inky display (600 X 448) 7 Colour with a Pi camera attached.
 #
 # Current features (mapped to each of the 4 buttons):
-# 0 [Landscape]:    XKCD Daily cartoon, updates every 12 hours.
-# 1 [Any]:          Photo Mode, takes a pic and displays.
-# 2 [Any]:          Photo Mode, takes a pic and displays.
-# 3 [Any]:          Photo Mode with 3 second delay, takes a pic and displays.
+# A [Portrait]:     Photo Mode with 3 second delay, takes a pic and displays.
+# B [Portrait]:     Photo Mode, takes a pic and displays.
+# C [Portrait]:     Photo Mode, takes a pic and displays.
+# D [Portrait]:     Photo Mode, takes a pic and displays.
 
 import signal
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from inkydev import PIN_INTERRUPT
 import RPi.GPIO as GPIO
 
 from display import Display
+from storage import Storage
+import camera
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(PIN_INTERRUPT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-# Set up the display logic.
-display = Display()
+# Set up the storage.
+storage = Storage()
 
-XKCD_MODE_ACTIVE = False
-XKCD_MODE_LAST_UPDATED = None
-XKCD_MODE_INTERVAL_SECONDS = 60 * 60 * 12  # 12 hours.
+# Set up the display logic.
+display = Display(
+    storage=storage,
+)
 
 
 def handle_interrupt(pin):
+    """
+    handle_interrupt is called any time a button is pressed on the display.
+    Handles user events.
+    """
     button_a, button_b, button_c, button_d, changed = display.inky_dev.read_buttons()
 
     if not changed:
         return
 
-    # button_a sets to xkcd mode and instantly refreshes the background.
+    # If Button A pressed, take a photo with a 3 second delay
     if button_a:
-        XKCD_MODE_ACTIVE = True
-        display.xkcd()
-        XKCD_MODE_LAST_UPDATED = datetime.utcnow()
-    elif button_b or button_c:
-        XKCD_MODE_ACTIVE = False
-        display.take_picture(0)
+        display.led_countdown_flash(countdown_seconds=3)
+        photo = camera.take_picture()
+        storage.set_latest_image(photo)
+    # If Button B pressed, take a photo with a 500ms delay.
+    elif button_b:
+        display.led_countdown_flash(countdown_seconds=0.5)
+        photo = camera.take_picture()
+        storage.set_latest_image(photo)
+    # If Button C pressed, take a photo with a 500ms delay.
+    elif button_b:
+        display.led_countdown_flash(countdown_seconds=0.5)
+        photo = camera.take_picture()
+        storage.set_latest_image(photo)
+    # If Button D pressed, take a photo with a 500ms delay.
     elif button_d:
-        XKCD_MODE_ACTIVE = False
-        display.take_picture(4)
+        display.led_countdown_flash(countdown_seconds=0.5)
+        photo = camera.take_picture()
+        storage.set_latest_image(photo)
 
-    display.led_reset_to_default()
+    # In all cases, redraw the display.
+    display.redraw()
     return
-
 
 # handle_interrupt can be called to run a button specific event (i.e. taking a photo)
 GPIO.add_event_detect(PIN_INTERRUPT, GPIO.FALLING, callback=handle_interrupt)
 
 while True:
     time.sleep(30)
-    if not XKCD_MODE_ACTIVE:
-        continue
     current_time = datetime.utcnow()
-    if (
-        not XKCD_MODE_LAST_UPDATED
-        or (current_time - XKCD_MODE_LAST_UPDATED).total_seconds()
-        > XKCD_MODE_INTERVAL_SECONDS
-    ):
-        display.xkcd()
-        XKCD_MODE_LAST_UPDATED = datetime.utcnow()
-        display.led_reset_to_default()
-        continue
+
+    # Update every update_interval_minutes
+    if not display.last_redraw_time or current_time > (display.last_redraw_time + timedelta(
+        minutes = float(storage.get_settings()["update_interval_minutes"]),
+    )):
+        display.redraw()
 
 signal.pause()

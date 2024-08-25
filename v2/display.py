@@ -2,6 +2,7 @@ import inky.inky_uc8159 as inky
 from inkydev import InkyDev
 from time import sleep
 import logging
+import datetime
 
 import camera
 import api
@@ -25,10 +26,14 @@ class Display:
     The display is in portrait mode.
     """
 
-    def __init__(self, storage: Storage):
+    def __init__(
+        self,
+        storage: Storage,
+    ):
         self.inky_display = inky.Inky((SIZE_X, SIZE_Y))
         self.inky_dev = InkyDev()
         self.storage = storage
+        self.last_redraw_time = None
 
         self.led_reset_to_default()
 
@@ -87,29 +92,7 @@ class Display:
         logging.debug("Redrawing display")
         self.led_set_all(0, 0, 50)
         
+        # TODO: Draw display.
+
+        self.last_redraw_time = datetime.datetime.utcnow()
         logging.debug("Redraw complete")
-
-    def take_picture(self, delay: int):
-        """
-        take_picture takes a picture with the onboard camera,
-        after the given delay (in seconds).
-        Then it will update the onboard display with the picture.
-        """
-        logging.info("Taking a new picture...")
-        self.led_countdown_flash(delay)
-
-        try:
-            image = camera.take_picture()
-
-            self.led_set_all(0, 0, 50)
-
-            print("Picture taken, displaying...")
-
-            image = image.resize(self.inky_display.resolution)
-            self.inky_display.set_image(image, saturation=SATURATION)
-            self.inky_display.show()
-        except Exception as e:
-            print("Failed to set the image...")
-            print(e)
-            self.led_set_all(255, 0, 0)
-            return
