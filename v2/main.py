@@ -64,25 +64,36 @@ def handle_interrupt(pin):
     if not changed:
         return
 
-    # If Button A pressed, take a photo with a 3 second delay
-    if button_a:
-        display.led_countdown_flash(countdown_seconds=3)
-        photo = camera.take_picture()
-        storage.set_latest_image(photo)
-    # If Button B pressed, take a photo with a 500ms delay.
-    elif button_b:
-        display.led_countdown_flash(countdown_seconds=0.5)
-        photo = camera.take_picture()
-        storage.set_latest_image(photo)
-    # If Button C pressed, take a photo with a 500ms delay.
-    elif button_c:
-        display.led_countdown_flash(countdown_seconds=0.5)
-        photo = camera.take_picture()
-        storage.set_latest_image(photo)
-    # If Button D pressed, redraw without taking a photo.
+    try:
+        # If Button A pressed, take a photo with a 3 second delay
+        if button_a:
+            logging.info("Button A pressed - 3 second delay before taking a photo")
+            display.led_countdown_flash(countdown_seconds=3)
+            photo = camera.take_picture()
+            storage.set_latest_image(photo)
+            display.redraw()
+        # If Button B pressed, take a photo with a 500ms delay.
+        elif button_b:
+            logging.info("Button B pressed - 0.5 second delay before taking a photo")
+            display.led_countdown_flash(countdown_seconds=0.5)
+            photo = camera.take_picture()
+            storage.set_latest_image(photo)
+            display.redraw()
+        # If Button C pressed, take a photo with a 500ms delay.
+        elif button_c:
+            logging.info("Button C pressed - 0.5 second delay before taking a photo")
+            display.led_countdown_flash(countdown_seconds=0.5)
+            photo = camera.take_picture()
+            storage.set_latest_image(photo)
+            display.redraw()
+        # If Button D pressed, redraw without taking a photo.
+        elif button_d:
+            logging.info("Button D pressed - just redrawing the image")
+            display.redraw()
+    except Exception as e:
+        logging.error("error encountered during a button press activity", exc_info=e)
+        display.led_reset_to_default(errored=True)
 
-    # In all cases, redraw the display.
-    display.redraw()
     return
 
 
@@ -102,7 +113,7 @@ while True:
     ):
         continue
 
-    logging.debug("Updating data from external sources")
+    logging.info(f"Updating data from external sources, last redraw was {display.last_redraw_time.isoformat()}")
 
     try:
         logging.debug("Updating weather data")
@@ -127,10 +138,11 @@ while True:
             station_code=settings["train_station"],
         )
         storage.set_train_data(train_data)
+
+        # Redraw display
+        display.redraw()
     except Exception as e:
         logging.error("error encountered while updating data", exc_info=e)
-
-    # Redraw display
-    display.redraw()
+        display.led_reset_to_default(errored=True)
 
 signal.pause()

@@ -15,7 +15,4 @@ def take_picture() -> Image.Image:
     stream.seek(0)
     image = Image.open(stream)
 
-    # Flip image for the display.
-    image = image.transpose(Image.FLIP_LEFT_RIGHT)
-
     return image

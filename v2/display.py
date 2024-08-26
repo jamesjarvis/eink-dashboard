@@ -1,6 +1,7 @@
 import inky.inky_uc8159 as inky
 from inkydev import InkyDev
 from time import sleep
+from PIL import Image
 import logging
 import datetime
 
@@ -38,19 +39,22 @@ class Display:
 
         self.led_reset_to_default()
 
-    def led_reset_to_default(self):
+    def led_reset_to_default(self, errored=False):
         """
         setup_leds will set all LEDs to their default colours.
         """
         # Initialise LEDs for their program function
         # A: Photo with 3 sec delay (green)
-        # B: Photo  (blue)
-        # C: Photo  (blue)
-        # D: Photo  (blue)
+        # B: Photo      (blue)
+        # C: Photo      (blue)
+        # D: Redraw     (error=red, no_error=blue)
         self.inky_dev.set_led(0, 0, 5, 0)
         self.inky_dev.set_led(1, 0, 0, 3)
         self.inky_dev.set_led(2, 0, 0, 3)
-        self.inky_dev.set_led(3, 0, 0, 1)
+        if errored:
+            self.inky_dev.set_led(3, 5, 0, 0)
+        else:
+            self.inky_dev.set_led(3, 0, 0, 2)
         self.inky_dev.update()
 
     def led_set_all(self, r, g, b, update=True):
@@ -92,10 +96,35 @@ class Display:
         # Set all LEDs to a low blue colour to indicate a refresh is happening.
         logging.debug("Redrawing display")
         self.led_set_all(0, 0, 50)
+        self.last_redraw_time = datetime.datetime.utcnow()
 
         # Background image.
         image = self.storage.get_latest_image()
-        image = image.resize(self.inky_display.resolution)
+        # Get the original dimensions
+        original_width, original_height = image.size
+
+        # Calculate the new dimensions for the 3:4 aspect ratio
+        # To maintain maximum resolution, we'll match the height and crop the width
+        new_height = original_height
+        new_width = int(new_height * (3 / 4))
+
+        # If the new width is greater than the original width, adjust for height instead
+        if new_width > original_width:
+            new_width = original_width
+            new_height = int(new_width * (4 / 3))
+
+        # Calculate the cropping box (centered)
+        left = (original_width - new_width) / 2
+        top = (original_height - new_height) / 2
+        right = (original_width + new_width) / 2
+        bottom = (original_height + new_height) / 2
+
+        # Crop the image
+        image = image.crop((left, top, right, bottom))
+        # Flip image for the display.
+        image = image.transpose(Image.FLIP_LEFT_RIGHT)
+        # Resize for the rest of the render logic.
+        image = image.resize((SIZE_Y, SIZE_X))
 
         # Draw overlay on top.
         image = graphics.draw_overlay(
@@ -104,9 +133,13 @@ class Display:
             train=self.storage.get_train_data(),
         )
 
+        # Rotate to set back onto the display
+        image = image.rotate(90, expand=True)
+
         # Draw onto display.
         self.inky_display.set_image(image, saturation=SATURATION)
         self.inky_display.show()
 
-        self.last_redraw_time = datetime.datetime.utcnow()
         logging.debug("Redraw complete")
+
+        self.led_reset_to_default()

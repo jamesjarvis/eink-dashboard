@@ -4,6 +4,7 @@ from itertools import islice
 import fonts
 import datetime
 import pytz
+import logging
 
 SIZE_X, SIZE_Y = 448, 600
 
@@ -22,6 +23,7 @@ def draw_overlay(
     CONSISTENT_BOX_HEIGHT = 110
     WEATHER_BOX_WIDTH, WEATHER_BOX_HEIGHT = 250, CONSISTENT_BOX_HEIGHT
     if weather:
+        logging.debug("Weather data found, drawing consistent weather box")
         draw.rectangle(
             (0, SIZE_Y - WEATHER_BOX_HEIGHT, WEATHER_BOX_WIDTH, SIZE_Y),
             fill=(255, 255, 255),
@@ -114,6 +116,7 @@ def draw_overlay(
         CONSISTENT_BOX_HEIGHT,
     )
     if train:
+        logging.debug("Train data found, drawing consistent train box")
         draw.rectangle(
             (WEATHER_BOX_WIDTH, SIZE_Y - TRAIN_BOX_HEIGHT, SIZE_X, SIZE_Y),
             fill=(255, 255, 255),
@@ -158,6 +161,7 @@ def draw_overlay(
     TRANSIENT_BOX_HEIGHT = 50
     RAIN_BOX_HEIGHT, RAIN_BOX_WIDTH = TRANSIENT_BOX_HEIGHT, WEATHER_BOX_WIDTH
     if weather and sum(forecast.precipitation_intensity for forecast in weather.forecasts) > 0:
+        logging.debug("Rain found, drawing transient rain box")
         precip_x, precip_y = get_precipitation_data(weather)
         graph_img = plot_time_data(precip_x, precip_y)
         image.paste(
