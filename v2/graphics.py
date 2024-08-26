@@ -24,6 +24,7 @@ def draw_overlay(
     draw.rectangle(
         (0, SIZE_Y, WEATHER_BOX_WIDTH, SIZE_Y - WEATHER_BOX_HEIGHT),
         fill=(255, 255, 255),
+        width=0,
     )
     # Draw temperature bottom left
     font = ImageFont.truetype(fonts.FONT_OPEN_SANS, 100)
@@ -110,7 +111,8 @@ def draw_overlay(
     TRAIN_BOX_WIDTH, TRAIN_BOX_HEIGHT = SIZE_X - WEATHER_BOX_WIDTH, CONSISTENT_BOX_HEIGHT
     draw.rectangle(
         (WEATHER_BOX_WIDTH, SIZE_Y, SIZE_X, SIZE_Y - TRAIN_BOX_HEIGHT),
-        fill=(255, 240, 255),
+        fill=(255, 255, 255),
+        width=0,
     )
     # Filter services not going to london
     departures = filter(
@@ -144,7 +146,59 @@ def draw_overlay(
                 (200, 160, 60),
                 font=font,
             )
-
         pos = pos + h
 
+    # Transient boxes live above the consistent boxes, and only show up if there is data to show.
+    TRANSIENT_BOX_HEIGHT = 50
+    RAIN_BOX_HEIGHT, RAIN_BOX_WIDTH = TRANSIENT_BOX_HEIGHT, WEATHER_BOX_WIDTH
+    if sum(forecast.precipitation_intensity for forecast in weather.forecasts) > 0 :
+        draw.rectangle(
+            (0, SIZE_Y-WEATHER_BOX_HEIGHT, RAIN_BOX_WIDTH, SIZE_Y - WEATHER_BOX_HEIGHT - RAIN_BOX_HEIGHT),
+            fill=None,
+            width=0,
+        )
+        precip_x, precip_y = get_precipitation_data(weather)
+        graph_img = plot_time_data(precip_x, precip_y)
+        image.paste(graph_img, (0, SIZE_Y-WEATHER_BOX_HEIGHT-RAIN_BOX_HEIGHT), graph_img)
+
+
     image.show()
+
+
+
+def get_precipitation_data(data: WeatherData) -> tuple[list[datetime.datetime], list[float]]:
+    x = []
+    y = []
+    for forecast in data.forecasts:
+        x.append(forecast.start_time)
+        temp_precip = (
+            0
+            if not forecast.precipitation_intensity
+            else float(forecast.precipitation_intensity)
+        )
+        y.append(temp_precip)
+    return (x, y)
+
+from matplotlib import dates
+from matplotlib import pyplot as plt
+import io
+import pytz
+def plot_time_data(x, y) ->  Image.Image:
+    plt.figure(figsize=(2.5, 0.5), dpi=100)
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0.3)
+    plt.fill_between(x, 0, y, color="blue")
+
+    axes = plt.gca()
+    axes.axes.get_yaxis().set_visible(False)
+    axes.axes.set_yscale('log')
+    axes.set_frame_on(False)
+    hfmt = dates.DateFormatter("%H:%M", tz=pytz.timezone("Europe/London"))
+    axes.set_ylim([0.01, 25])
+    axes.tick_params(axis='x', labelsize=6, length=2, direction='in', colors='blue')
+    axes.set_xticks(axes.get_xticks()[::2])
+    axes.xaxis.set_major_formatter(hfmt)
+    buf = io.BytesIO()
+    plt.savefig(buf, format="png", transparent=True)
+    buf.seek(0)
+    img = Image.open(buf)
+    return img
