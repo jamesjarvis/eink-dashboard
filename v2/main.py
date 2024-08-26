@@ -14,6 +14,7 @@
 import signal
 import time
 import logging
+from logging.handlers import RotatingFileHandler
 from datetime import datetime, timedelta
 from inkydev import PIN_INTERRUPT
 import RPi.GPIO as GPIO
@@ -27,7 +28,7 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(PIN_INTERRUPT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 # Set up logging.
-rfh = logging.handlers.RotatingFileHandler(
+rfh = RotatingFileHandler(
     filename="display.log",
     mode="a",
     maxBytes=20 * 1024 * 1024,  # Max file size 20MB
