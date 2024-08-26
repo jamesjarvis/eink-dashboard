@@ -26,6 +26,24 @@ import api
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(PIN_INTERRUPT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
+# Set up logging.
+rfh = logging.handlers.RotatingFileHandler(
+    filename="display.log",
+    mode="a",
+    maxBytes=20 * 1024 * 1024,  # Max file size 20MB
+    backupCount=2,
+    encoding=None,
+    delay=0,
+)
+logging.basicConfig(
+    format="%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s",
+    datefmt="%y-%m-%d %H:%M:%S",
+    level=logging.DEBUG,
+    handlers=[
+        rfh,
+    ],
+)
+
 # Set up the storage.
 storage = Storage()
 
