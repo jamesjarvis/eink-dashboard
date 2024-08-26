@@ -26,8 +26,10 @@ settings = storage.get_settings()
 # )
 # storage.set_train_data(train_data)
 
-graphics.draw_overlay(
+image = graphics.draw_overlay(
   image=storage.get_latest_image(),
   weather=storage.get_weather_data(),
   train=storage.get_train_data(),
 )
+
+image.show()
