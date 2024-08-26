@@ -111,6 +111,7 @@ while True:
             minutes=float(storage.get_settings()["update_interval_minutes"]),
         )
     ):
+        logging.debug(f"Last redraw was {display.last_redraw_time.isoformat()} - too soon, skipping for now")
         continue
 
     logging.info(
