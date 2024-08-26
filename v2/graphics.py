@@ -31,7 +31,9 @@ def draw_overlay(
         )
         # Draw temperature bottom left
         font = ImageFont.truetype(fonts.FONT_OPEN_SANS, 100)
-        temp_text = f"{int(weather.forecasts[0].temperature) if weather.forecasts else '?'}"
+        temp_text = (
+            f"{int(weather.forecasts[0].temperature) if weather.forecasts else '?'}"
+        )
         w = draw.textlength(temp_text, font=font)
         draw.text(
             (-3, SIZE_Y - (WEATHER_BOX_HEIGHT + 15)),
@@ -160,7 +162,10 @@ def draw_overlay(
     # Transient boxes live above the consistent boxes, and only show up if there is data to show.
     TRANSIENT_BOX_HEIGHT = 50
     RAIN_BOX_HEIGHT, RAIN_BOX_WIDTH = TRANSIENT_BOX_HEIGHT, WEATHER_BOX_WIDTH
-    if weather and sum(forecast.precipitation_intensity for forecast in weather.forecasts) > 0:
+    if (
+        weather
+        and sum(forecast.precipitation_intensity for forecast in weather.forecasts) > 0
+    ):
         logging.debug("Rain found, drawing transient rain box")
         precip_x, precip_y = get_precipitation_data(weather)
         graph_img = plot_time_data(precip_x, precip_y)
@@ -170,6 +175,7 @@ def draw_overlay(
 
     # Return modified image.
     return image
+
 
 def get_precipitation_data(
     data: WeatherData,
