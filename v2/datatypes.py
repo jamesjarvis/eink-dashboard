@@ -13,7 +13,7 @@ class PointForecast:
     start_time: datetime.datetime
     temperature: float
     precipitation_intensity: float
-    weather_code: float
+    weather_code: str
 
 
 @dataclass

@@ -91,14 +91,46 @@ def get_forecast(lat: float, lon: float, api_key: str) -> WeatherData:
         return None
 
     response_json = r.json()
+
+    code_to_human = {
+        1000: "clear",
+        1001: "cloudy",
+        1100: "mostly_clear",
+        1101: "partly_cloudy",
+        1102: "mostly_cloudy",
+        2000: "fog",
+        2100: "fog_light",
+        3000: "light_wind",
+        3001: "wind",
+        3002: "strong_wind",
+        4000: "drizzle",
+        4001: "rain",
+        4200: "rain_light",
+        4201: "rain_heavy",
+        5000: "snow",
+        5001: "flurries",
+        5100: "snow_light",
+        5101: "snow_heavy",
+        6000: "freezing_drizzle",
+        6001: "freezing_rain",
+        6200: "freezing_rain_light",
+        6201: "freezing_rain_heavy",
+        7000: "ice_pellets",
+        7101: "ice_pellets_heavy",
+        7102: "ice_pellets_light",
+        8000: "thunderstorm",
+    }
+
     forecasts = []
     for interval in response_json["data"]["timelines"][0]["intervals"]:
+        weather_code = code_to_human[interval["values"]["weatherCode"]] if interval["values"]["weatherCode"] in code_to_human else "unknown"
+        
         forecasts.append(
             PointForecast(
                 start_time=parse_datetime(interval["startTime"]),
                 temperature=interval["values"]["temperature"],
                 precipitation_intensity=interval["values"]["precipitationIntensity"],
-                weather_code=interval["values"]["weatherCode"],
+                weather_code=weather_code,
             ),
         )
     

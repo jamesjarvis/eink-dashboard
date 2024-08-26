@@ -2,7 +2,8 @@ from datatypes import WeatherData, PointForecast, TrainData, Departure
 import json
 from PIL import Image
 import os
-from utils import parse_datetime
+import datetime
+import pytz
 
 
 class Storage:
@@ -46,7 +47,7 @@ class Storage:
                 for forecast_json in weather_data_json["forecasts"]:
                     forecasts.append(
                         PointForecast(
-                            start_time=parse_datetime(forecast_json["start_time"]),
+                            start_time=datetime.datetime.fromisoformat(forecast_json["start_time"]).astimezone(tz=pytz.timezone("Europe/London")),
                             temperature=forecast_json["temperature"],
                             precipitation_intensity=forecast_json[
                                 "precipitation_intensity"
@@ -55,8 +56,10 @@ class Storage:
                         ),
                     )
                 return WeatherData(
-                    last_updated=parse_datetime(weather_data_json["last_updated"]),
+                    last_updated=datetime.datetime.fromisoformat(weather_data_json["last_updated"]).astimezone(tz=pytz.timezone("Europe/London")),
                     forecasts=forecasts,
+                    sunrise=datetime.datetime.fromisoformat(weather_data_json["sunrise"]).astimezone(tz=pytz.timezone("Europe/London")),
+                    sunset=datetime.datetime.fromisoformat(weather_data_json["sunset"]).astimezone(tz=pytz.timezone("Europe/London")),
                 )
         except Exception as e:
             return None
@@ -67,6 +70,8 @@ class Storage:
         Store as:
         {
             "last_updated": "",
+            "sunrise": "",
+            "sunset": "",
             "forecasts": [
                 {
                     "start_time": "",
@@ -90,6 +95,8 @@ class Storage:
         weather_data_json = {
             "last_updated": data.last_updated.isoformat(),
             "forecasts": forecasts,
+            "sunrise": data.sunrise.isoformat(),
+            "sunset": data.sunset.isoformat(),
         }
         with open(self.weather_data_filename, "w") as f:
             json.dump(weather_data_json, f, indent=2)
@@ -113,7 +120,7 @@ class Storage:
                         ),
                     )
                 return TrainData(
-                    last_updated=parse_datetime(departure_json["last_updated"]),
+                    last_updated=datetime.datetime.fromisoformat(departure_json["last_updated"]).astimezone(tz=pytz.timezone("Europe/London")),
                     departures=departures,
                 )
         except Exception as e:
