@@ -33,14 +33,14 @@ def draw_overlay(
     draw.text(
         (-3, SIZE_Y - (WEATHER_BOX_HEIGHT + 15)),
         temp_text,
-        fill=(0, 0, 255),
+        fill=(0, 0, 0),
         font=font,
     )
     font_weather = ImageFont.truetype(fonts.FONT_WEATHER, 60)
     draw.text(
         (w, SIZE_Y - (WEATHER_BOX_HEIGHT + 10)),
         fonts.CELSIUS,
-        (0, 255, 0),
+        fill=(0, 0, 0),
         font=font_weather,
     )
     # Draw sunset/sunrise next to that
@@ -60,13 +60,13 @@ def draw_overlay(
     draw.text(
         (WEATHER_BOX_WIDTH - w - w_glyph - 10, SIZE_Y - 30),
         sun_glyph,
-        (255, 0, 0),
+        fill=(0, 0, 0),
         font=font_weather,
     )
     draw.text(
         (WEATHER_BOX_WIDTH - w - 5, SIZE_Y - 30),
         sun_text,
-        (255, 0, 0),
+        fill=(0, 0, 0),
         font=font,
     )
     # Draw weather icon
@@ -103,7 +103,7 @@ def draw_overlay(
     draw.text(
         (WEATHER_BOX_WIDTH - w - 5, SIZE_Y - (WEATHER_BOX_HEIGHT - 5)),
         icons[weather.forecasts[0].weather_code],
-        (255, 0, 0),
+        fill=(0, 0, 0),
         font=font_weather,
     )
 
@@ -199,7 +199,7 @@ import pytz
 def plot_time_data(x, y) -> Image.Image:
     plt.figure(figsize=(2.5, 0.5), dpi=100)
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0.3)
-    plt.fill_between(x, 0, y, color="blue")
+    plt.fill_between(x, 0, y, color="white")
 
     axes = plt.gca()
     axes.axes.get_yaxis().set_visible(False)
@@ -207,7 +207,7 @@ def plot_time_data(x, y) -> Image.Image:
     axes.set_frame_on(False)
     hfmt = dates.DateFormatter("%H:%M", tz=pytz.timezone("Europe/London"))
     axes.set_ylim([0.01, 25])
-    axes.tick_params(axis="x", labelsize=6, length=2, direction="in", colors="blue")
+    axes.tick_params(axis="x", labelsize=6, length=2, direction="in", colors="white")
     axes.set_xticks(axes.get_xticks()[::2])
     axes.xaxis.set_major_formatter(hfmt)
     buf = io.BytesIO()
