@@ -1,5 +1,6 @@
 from PIL import Image, ImageDraw, ImageFont
 from datatypes import WeatherData, TrainData
+from itertools import islice
 import fonts
 import datetime
 import pytz
@@ -12,17 +13,20 @@ def draw_overlay(
     weather: WeatherData,
     train: TrainData,
 ):
-    current_time = datetime.datetime.utcnow().astimezone(tz=pytz.timezone("Europe/London"))
+    current_time = datetime.datetime.utcnow().astimezone(
+        tz=pytz.timezone("Europe/London")
+    )
     draw = ImageDraw.Draw(image)
 
-    # Consistent weather box 280 x 110 px
-    WEATHER_BOX_WIDTH, WEATHER_BOX_HEIGHT = 250, 100
+    # Consistent weather box 250 x 100 px
+    CONSISTENT_BOX_HEIGHT = 110
+    WEATHER_BOX_WIDTH, WEATHER_BOX_HEIGHT = 250, CONSISTENT_BOX_HEIGHT
     draw.rectangle(
         (0, SIZE_Y, WEATHER_BOX_WIDTH, SIZE_Y - WEATHER_BOX_HEIGHT),
         fill=(255, 255, 255),
     )
     # Draw temperature bottom left
-    font = ImageFont.truetype(fonts.FONT_OPEN_SANS, 90)
+    font = ImageFont.truetype(fonts.FONT_OPEN_SANS, 100)
     temp_text = f"{int(weather.forecasts[0].temperature) if weather.forecasts else '?'}"
     w = draw.textlength(temp_text, font=font)
     draw.text(
@@ -65,7 +69,7 @@ def draw_overlay(
         font=font,
     )
     # Draw weather icon
-    font_weather = ImageFont.truetype(fonts.FONT_WEATHER, 50)
+    font_weather = ImageFont.truetype(fonts.FONT_WEATHER, 60)
     icons = {
         "light_wind": fonts.DUST,
         "wind": fonts.WINDY,
@@ -102,5 +106,45 @@ def draw_overlay(
         font=font_weather,
     )
 
+    # Consistent train box 198 x 100 px
+    TRAIN_BOX_WIDTH, TRAIN_BOX_HEIGHT = SIZE_X - WEATHER_BOX_WIDTH, CONSISTENT_BOX_HEIGHT
+    draw.rectangle(
+        (WEATHER_BOX_WIDTH, SIZE_Y, SIZE_X, SIZE_Y - TRAIN_BOX_HEIGHT),
+        fill=(255, 240, 255),
+    )
+    # Filter services not going to london
+    departures = filter(
+        lambda item: "LDN" in item.station_destination, train.departures
+    )
+    departures = list(islice(departures, 6))
+    font = ImageFont.truetype(fonts.FONT_OPEN_SANS, 14)
+    # Draw list of departures
+    pos = SIZE_Y - TRAIN_BOX_HEIGHT
+    for departure in departures:
+        msg = f"{departure.booked_departure}: {departure.station_destination}"
+        w, h = draw.textsize(msg, font=font)
+        draw.text(
+            (SIZE_X - TRAIN_BOX_WIDTH + 5, pos),
+            msg,
+            (255, 0, 0) if departure.display_as == "CANCELLED_CALL" else (0, 0, 0),
+            font=font,
+        )
+
+        if departure.display_as == "CANCELLED_CALL":
+            draw.text(
+                (SIZE_X - TRAIN_BOX_WIDTH + w + 10, pos),
+                "CANCL",
+                (255, 0, 0),
+                font=font,
+            )
+        elif departure.realtime_departure != departure.booked_departure:
+            draw.text(
+                (SIZE_X - TRAIN_BOX_WIDTH + w + 10, pos),
+                f"({departure.realtime_departure})",
+                (200, 160, 60),
+                font=font,
+            )
+
+        pos = pos + h
 
     image.show()

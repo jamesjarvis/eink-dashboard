@@ -34,7 +34,7 @@ class Departure:
     realtime_departure: str
     # station name, beautified
     station_origin: str
-    station_departure: str
+    station_destination: str
     # "" or "CANCELLED_CALL"
     display_as: str
 

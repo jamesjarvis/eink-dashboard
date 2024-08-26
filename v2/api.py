@@ -191,9 +191,9 @@ def beautify_station_name(name: str) -> str:
     This simply returns a prettier / shorter name if it is known
     """
     if name == "London Charing Cross":
-        return "London Charing X"
+        return "LDN Charing X"
     elif name == "London Cannon Street":
-        return "London Cannon St"
+        return "LDN Cannon St"
     return name
 
 
@@ -220,7 +220,7 @@ def get_train_departure_times(username: str, password: str, station_code: str) -
                 realtime_arrival=beautify_time_string(location_detail["realtimeArrival"] if "realtimeArrival" in location_detail else location_detail["gbttBookedArrival"]),
                 realtime_departure=beautify_time_string(location_detail["realtimeDeparture"] if "realtimeDeparture" in location_detail else location_detail["gbttBookedDeparture"]),
                 station_origin=beautify_station_name(location_detail["origin"][0]["description"]),
-                station_departure=beautify_station_name(location_detail["destination"][0]["description"]),
+                station_destination=beautify_station_name(location_detail["destination"][0]["description"]),
                 display_as=location_detail["displayAs"],
             )
             departures.append(departure)

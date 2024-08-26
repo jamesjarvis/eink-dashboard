@@ -115,15 +115,16 @@ class Storage:
                             realtime_arrival=departure_json["realtime_arrival"],
                             realtime_departure=departure_json["realtime_departure"],
                             station_origin=departure_json["station_origin"],
-                            station_departure=departure_json["station_departure"],
+                            station_destination=departure_json["station_destination"],
                             display_as=departure_json["display_as"],
                         ),
                     )
                 return TrainData(
-                    last_updated=datetime.datetime.fromisoformat(departure_json["last_updated"]).astimezone(tz=pytz.timezone("Europe/London")),
+                    last_updated=datetime.datetime.fromisoformat(train_data_json["last_updated"]).astimezone(tz=pytz.timezone("Europe/London")),
                     departures=departures,
                 )
         except Exception as e:
+            print(e)
             return None
         return None
 
@@ -139,7 +140,7 @@ class Storage:
                     "realtime_arrival": "",
                     "realtime_departure": "",
                     "station_origin": "",
-                    "station_departure": "",
+                    "station_destination": "",
                     "display_as": "",
                 },
             ]
@@ -154,7 +155,7 @@ class Storage:
                     "realtime_arrival": departure.realtime_arrival,
                     "realtime_departure": departure.realtime_departure,
                     "station_origin": departure.station_origin,
-                    "station_departure": departure.station_departure,
+                    "station_destination": departure.station_destination,
                     "display_as": departure.display_as,
                 },
             )
