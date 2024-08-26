@@ -2,15 +2,40 @@
 
 This is intended to be ran on a raspberry pi zero connected with a pi zero camera and the pimoroni InkyDev board.
 
-Connect via ssh, then run deploy.sh.
-
-Then copy
+## Deploying the script
 
 ```bash
-
-# Run the display boi.
-sudo python3 /home/pi/picamdisplay.py & > /home/pi/logpicamdisplay.txt 2>&1
-
+sh deploy.sh
 ```
 
-To `/etc/rc.local` to run the script on startup.
+## Running the script on startup
+
+```bash
+sudo nano /lib/systemd/system/display.service
+```
+
+Insert the following:
+
+```txt
+[Unit]
+Description=E-ink Display
+After=multi-user.target
+
+[Service]
+WorkingDirectory=/home/pi/
+ExecStart=sudo /usr/bin/python3 main.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Then run:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable display.service
+sudo systemctl start display.service
+sudo systemctl status display.service
+tail -f display.log
+```
