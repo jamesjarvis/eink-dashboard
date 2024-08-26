@@ -43,14 +43,14 @@ class Display:
         setup_leds will set all LEDs to their default colours.
         """
         # Initialise LEDs for their program function
-        # 0: Photo  (blue)
-        # 1: Photo  (blue)
-        # 2: Photo  (blue)
-        # 3: Photo with 3 sec delay (green)
-        self.inky_dev.set_led(0, 0, 0, 5)
-        self.inky_dev.set_led(1, 0, 0, 5)
-        self.inky_dev.set_led(2, 0, 0, 5)
-        self.inky_dev.set_led(3, 0, 5, 0)
+        # A: Photo with 3 sec delay (green)
+        # B: Photo  (blue)
+        # C: Photo  (blue)
+        # D: Photo  (blue)
+        self.inky_dev.set_led(0, 0, 5, 0)
+        self.inky_dev.set_led(1, 0, 0, 3)
+        self.inky_dev.set_led(2, 0, 0, 3)
+        self.inky_dev.set_led(3, 0, 0, 1)
         self.inky_dev.update()
 
     def led_set_all(self, r, g, b, update=True):

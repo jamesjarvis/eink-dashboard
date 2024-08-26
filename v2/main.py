@@ -75,7 +75,7 @@ def handle_interrupt(pin):
         photo = camera.take_picture()
         storage.set_latest_image(photo)
     # If Button C pressed, take a photo with a 500ms delay.
-    elif button_b:
+    elif button_c:
         display.led_countdown_flash(countdown_seconds=0.5)
         photo = camera.take_picture()
         storage.set_latest_image(photo)

@@ -23,7 +23,7 @@ def draw_overlay(
     WEATHER_BOX_WIDTH, WEATHER_BOX_HEIGHT = 250, CONSISTENT_BOX_HEIGHT
     if weather:
         draw.rectangle(
-            (0, SIZE_Y, WEATHER_BOX_WIDTH, SIZE_Y - WEATHER_BOX_HEIGHT),
+            (0, SIZE_Y - WEATHER_BOX_HEIGHT, WEATHER_BOX_WIDTH, SIZE_Y),
             fill=(255, 255, 255),
             width=0,
         )
@@ -115,7 +115,7 @@ def draw_overlay(
     )
     if train:
         draw.rectangle(
-            (WEATHER_BOX_WIDTH, SIZE_Y, SIZE_X, SIZE_Y - TRAIN_BOX_HEIGHT),
+            (WEATHER_BOX_WIDTH, SIZE_Y - TRAIN_BOX_HEIGHT, SIZE_X, SIZE_Y),
             fill=(255, 255, 255),
             width=0,
         )
@@ -129,7 +129,8 @@ def draw_overlay(
         pos = SIZE_Y - TRAIN_BOX_HEIGHT
         for departure in departures:
             msg = f"{departure.booked_departure}: {departure.station_destination}"
-            w, h = draw.textsize(msg, font=font)
+            w = draw.textlength(msg, font=font)
+            h = 17
             draw.text(
                 (SIZE_X - TRAIN_BOX_WIDTH + 5, pos),
                 msg,
@@ -157,16 +158,6 @@ def draw_overlay(
     TRANSIENT_BOX_HEIGHT = 50
     RAIN_BOX_HEIGHT, RAIN_BOX_WIDTH = TRANSIENT_BOX_HEIGHT, WEATHER_BOX_WIDTH
     if weather and sum(forecast.precipitation_intensity for forecast in weather.forecasts) > 0:
-        draw.rectangle(
-            (
-                0,
-                SIZE_Y - WEATHER_BOX_HEIGHT,
-                RAIN_BOX_WIDTH,
-                SIZE_Y - WEATHER_BOX_HEIGHT - RAIN_BOX_HEIGHT,
-            ),
-            fill=None,
-            width=0,
-        )
         precip_x, precip_y = get_precipitation_data(weather)
         graph_img = plot_time_data(precip_x, precip_y)
         image.paste(
