@@ -6,6 +6,7 @@ import datetime
 
 import camera
 import api
+import graphics
 
 from storage import Storage
 
@@ -97,7 +98,11 @@ class Display:
         image = image.resize(self.inky_display.resolution)
 
         # Draw overlay on top.
-        # TODO
+        image = graphics.draw_overlay(
+            image=image,
+            weather=self.storage.get_weather_data(),
+            train=self.storage.get_train_data(),
+        )
 
         # Draw onto display.
         self.inky_display.set_image(image, saturation=SATURATION)
