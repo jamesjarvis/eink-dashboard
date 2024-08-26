@@ -6,6 +6,7 @@ import datetime
 import logging
 import pytz
 
+
 # Utility functions
 def parse_datetime(
     datetime_string, tz_from=pytz.utc, tz_to=pytz.timezone("Europe/London")
@@ -27,6 +28,7 @@ def xkcd() -> Image.Image:
         return None
     image = Image.open(BytesIO(r.content))
     return image
+
 
 def get_forecast(lat: float, lon: float, api_key: str) -> WeatherData:
     """
@@ -89,11 +91,13 @@ def get_forecast(lat: float, lon: float, api_key: str) -> WeatherData:
         ],
     }
 
-    headers = {
-        "Accept": "application/json",
-        "Content-Type": "application/json"
-    }
-    r = requests.post("https://api.tomorrow.io/v4/timelines", headers=headers, params=querystring, json=payload)
+    headers = {"Accept": "application/json", "Content-Type": "application/json"}
+    r = requests.post(
+        "https://api.tomorrow.io/v4/timelines",
+        headers=headers,
+        params=querystring,
+        json=payload,
+    )
     if r.status_code != 200:
         logging.error("Bad response from weather forecasting service", r.status_code)
         return None
@@ -131,8 +135,12 @@ def get_forecast(lat: float, lon: float, api_key: str) -> WeatherData:
 
     forecasts = []
     for interval in response_json["data"]["timelines"][0]["intervals"]:
-        weather_code = code_to_human[interval["values"]["weatherCode"]] if interval["values"]["weatherCode"] in code_to_human else "unknown"
-        
+        weather_code = (
+            code_to_human[interval["values"]["weatherCode"]]
+            if interval["values"]["weatherCode"] in code_to_human
+            else "unknown"
+        )
+
         forecasts.append(
             PointForecast(
                 start_time=parse_datetime(interval["startTime"]),
@@ -141,7 +149,7 @@ def get_forecast(lat: float, lon: float, api_key: str) -> WeatherData:
                 weather_code=weather_code,
             ),
         )
-    
+
     return WeatherData(
         last_updated=current_time,
         forecasts=forecasts,
@@ -149,7 +157,10 @@ def get_forecast(lat: float, lon: float, api_key: str) -> WeatherData:
         sunset=None,
     )
 
-def get_sunrise_and_sunset(lat: float, lon: float) -> tuple[datetime.datetime, datetime.datetime]:
+
+def get_sunrise_and_sunset(
+    lat: float, lon: float
+) -> tuple[datetime.datetime, datetime.datetime]:
     """
     Gets sunrise/set from an api in the following format:
     {
@@ -190,9 +201,11 @@ def get_sunrise_and_sunset(lat: float, lon: float) -> tuple[datetime.datetime, d
     sunset = parse_datetime(payload["results"]["sunset"])
     return (sunrise, sunset)
 
+
 def beautify_time_string(time: str) -> str:
     """Changes 1210 to 12:10"""
     return f"{time[:2]}:{time[2:]}"
+
 
 def beautify_station_name(name: str) -> str:
     """
@@ -205,7 +218,9 @@ def beautify_station_name(name: str) -> str:
     return name
 
 
-def get_train_departure_times(username: str, password: str, station_code: str) -> TrainData:
+def get_train_departure_times(
+    username: str, password: str, station_code: str
+) -> TrainData:
     url = f"https://api.rtt.io/api/v1/json/search/{station_code}"
     try:
         r = requests.get(url, auth=(username, password))
@@ -223,12 +238,28 @@ def get_train_departure_times(username: str, password: str, station_code: str) -
                 continue
             location_detail = service["locationDetail"]
             departure = Departure(
-                booked_arrival=beautify_time_string(location_detail["gbttBookedArrival"]),
-                booked_departure=beautify_time_string(location_detail["gbttBookedDeparture"]),
-                realtime_arrival=beautify_time_string(location_detail["realtimeArrival"] if "realtimeArrival" in location_detail else location_detail["gbttBookedArrival"]),
-                realtime_departure=beautify_time_string(location_detail["realtimeDeparture"] if "realtimeDeparture" in location_detail else location_detail["gbttBookedDeparture"]),
-                station_origin=beautify_station_name(location_detail["origin"][0]["description"]),
-                station_destination=beautify_station_name(location_detail["destination"][0]["description"]),
+                booked_arrival=beautify_time_string(
+                    location_detail["gbttBookedArrival"]
+                ),
+                booked_departure=beautify_time_string(
+                    location_detail["gbttBookedDeparture"]
+                ),
+                realtime_arrival=beautify_time_string(
+                    location_detail["realtimeArrival"]
+                    if "realtimeArrival" in location_detail
+                    else location_detail["gbttBookedArrival"]
+                ),
+                realtime_departure=beautify_time_string(
+                    location_detail["realtimeDeparture"]
+                    if "realtimeDeparture" in location_detail
+                    else location_detail["gbttBookedDeparture"]
+                ),
+                station_origin=beautify_station_name(
+                    location_detail["origin"][0]["description"]
+                ),
+                station_destination=beautify_station_name(
+                    location_detail["destination"][0]["description"]
+                ),
                 display_as=location_detail["displayAs"],
             )
             departures.append(departure)

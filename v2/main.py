@@ -66,6 +66,7 @@ def handle_interrupt(pin):
     display.redraw()
     return
 
+
 # handle_interrupt can be called to run a button specific event (i.e. taking a photo)
 GPIO.add_event_detect(PIN_INTERRUPT, GPIO.FALLING, callback=handle_interrupt)
 
@@ -74,9 +75,12 @@ while True:
     current_time = datetime.utcnow()
 
     # If the last redraw time was within the last update_interval_minutes, skip redraw.
-    if display.last_redraw_time and current_time < (display.last_redraw_time + timedelta(
-        minutes = float(storage.get_settings()["update_interval_minutes"]),
-    )):
+    if display.last_redraw_time and current_time < (
+        display.last_redraw_time
+        + timedelta(
+            minutes=float(storage.get_settings()["update_interval_minutes"]),
+        )
+    ):
         continue
 
     # Update weather data

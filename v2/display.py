@@ -79,7 +79,7 @@ class Display:
             if i > 3:
                 self.inky_dev.set_led(3, 255, 255, 255)
             self.inky_dev.update()
-            sleep(countdown_seconds/4)
+            sleep(countdown_seconds / 4)
 
         # Camera flash, set to bright white
         self.led_set_all(255, 255, 255)
@@ -91,7 +91,7 @@ class Display:
         # Set all LEDs to a low blue colour to indicate a refresh is happening.
         logging.debug("Redrawing display")
         self.led_set_all(0, 0, 50)
-        
+
         # Background image.
         image = self.storage.get_latest_image()
         image = image.resize(self.inky_display.resolution)

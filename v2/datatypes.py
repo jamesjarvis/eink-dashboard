@@ -8,6 +8,7 @@ i.e. weather or important dates.
 
 # Weather Data
 
+
 @dataclass
 class PointForecast:
     start_time: datetime.datetime
@@ -23,7 +24,9 @@ class WeatherData:
     sunset: datetime.datetime
     forecasts: list[PointForecast]
 
+
 # Train Data
+
 
 @dataclass
 class Departure:
@@ -37,6 +40,7 @@ class Departure:
     station_destination: str
     # "" or "CANCELLED_CALL"
     display_as: str
+
 
 @dataclass
 class TrainData:

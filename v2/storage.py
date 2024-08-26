@@ -47,7 +47,9 @@ class Storage:
                 for forecast_json in weather_data_json["forecasts"]:
                     forecasts.append(
                         PointForecast(
-                            start_time=datetime.datetime.fromisoformat(forecast_json["start_time"]).astimezone(tz=pytz.timezone("Europe/London")),
+                            start_time=datetime.datetime.fromisoformat(
+                                forecast_json["start_time"]
+                            ).astimezone(tz=pytz.timezone("Europe/London")),
                             temperature=forecast_json["temperature"],
                             precipitation_intensity=forecast_json[
                                 "precipitation_intensity"
@@ -56,10 +58,16 @@ class Storage:
                         ),
                     )
                 return WeatherData(
-                    last_updated=datetime.datetime.fromisoformat(weather_data_json["last_updated"]).astimezone(tz=pytz.timezone("Europe/London")),
+                    last_updated=datetime.datetime.fromisoformat(
+                        weather_data_json["last_updated"]
+                    ).astimezone(tz=pytz.timezone("Europe/London")),
                     forecasts=forecasts,
-                    sunrise=datetime.datetime.fromisoformat(weather_data_json["sunrise"]).astimezone(tz=pytz.timezone("Europe/London")),
-                    sunset=datetime.datetime.fromisoformat(weather_data_json["sunset"]).astimezone(tz=pytz.timezone("Europe/London")),
+                    sunrise=datetime.datetime.fromisoformat(
+                        weather_data_json["sunrise"]
+                    ).astimezone(tz=pytz.timezone("Europe/London")),
+                    sunset=datetime.datetime.fromisoformat(
+                        weather_data_json["sunset"]
+                    ).astimezone(tz=pytz.timezone("Europe/London")),
                 )
         except Exception as e:
             return None
@@ -120,7 +128,9 @@ class Storage:
                         ),
                     )
                 return TrainData(
-                    last_updated=datetime.datetime.fromisoformat(train_data_json["last_updated"]).astimezone(tz=pytz.timezone("Europe/London")),
+                    last_updated=datetime.datetime.fromisoformat(
+                        train_data_json["last_updated"]
+                    ).astimezone(tz=pytz.timezone("Europe/London")),
                     departures=departures,
                 )
         except Exception as e:
