@@ -115,7 +115,7 @@ while True:
         continue
 
     logging.info(
-        f"Updating data from external sources, last redraw was {display.last_redraw_time.isoformat()}"
+        f"Updating data from external sources, last redraw was {display.last_redraw_time.isoformat() if display.last_redraw_time else 'UNKNOWN'}"
     )
 
     try:

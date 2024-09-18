@@ -92,12 +92,15 @@ def get_forecast(lat: float, lon: float, api_key: str) -> WeatherData:
     }
 
     headers = {"Accept": "application/json", "Content-Type": "application/json"}
-    r = requests.post(
-        "https://api.tomorrow.io/v4/timelines",
-        headers=headers,
-        params=querystring,
-        json=payload,
-    )
+    try:
+        r = requests.post(
+            "https://api.tomorrow.io/v4/timelines",
+            headers=headers,
+            params=querystring,
+            json=payload,
+        )
+    except Exception as e:
+        return None
     if r.status_code != 200:
         logging.error("Bad response from weather forecasting service", r.status_code)
         return None
