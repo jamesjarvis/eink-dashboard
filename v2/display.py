@@ -137,6 +137,8 @@ class Display:
         image = image.rotate(90, expand=True)
 
         # Draw onto display.
+        logging.info("Beginning Display Redraw")
+
         self.inky_display.set_image(image, saturation=SATURATION)
         self.inky_display.show()
 
