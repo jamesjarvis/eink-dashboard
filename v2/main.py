@@ -101,7 +101,7 @@ def handle_interrupt(pin):
 GPIO.add_event_detect(PIN_INTERRUPT, GPIO.FALLING, callback=handle_interrupt)
 
 while True:
-    time.sleep(30)
+    time.sleep(10)
     current_time = datetime.utcnow()
 
     # If the last redraw time was within the last update_interval_minutes, skip redraw.
@@ -144,6 +144,9 @@ while True:
 
         # Redraw display
         display.redraw()
+    except RuntimeError:
+        logging.error("error encountered while updating data", exc_info=e)
+        display.led_reset_to_default(errored=True)
     except Exception as e:
         logging.error("error encountered while updating data", exc_info=e)
         display.led_reset_to_default(errored=True)
