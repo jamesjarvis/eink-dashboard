@@ -96,7 +96,6 @@ class Display:
         # Set all LEDs to a low blue colour to indicate a refresh is happening.
         logging.debug("Redrawing display")
         self.led_set_all(0, 0, 50)
-        self.last_redraw_time = datetime.datetime.utcnow()
 
         # Background image.
         image = self.storage.get_latest_image()
@@ -145,3 +144,4 @@ class Display:
         logging.debug("Redraw complete")
 
         self.led_reset_to_default()
+        self.last_redraw_time = datetime.datetime.utcnow()
