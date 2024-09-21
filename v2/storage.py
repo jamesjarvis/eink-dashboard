@@ -71,6 +71,8 @@ class Storage:
                 )
         except Exception as e:
             return None
+        except AttributeError as e:
+            return None
         return None
 
     def set_weather_data(self, data: WeatherData):

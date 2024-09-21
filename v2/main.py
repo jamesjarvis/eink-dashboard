@@ -141,14 +141,16 @@ while True:
             station_code=settings["train_station"],
         )
         storage.set_train_data(train_data)
+    except Exception as e:
+        logging.error("error encountered while updating data", exc_info=e)
+        display.led_reset_to_default(errored=True)
+        continue
 
+    try:
         # Redraw display
         display.redraw()
     except RuntimeError:
-        logging.error("error encountered while updating data", exc_info=e)
-        display.led_reset_to_default(errored=True)
-    except Exception as e:
-        logging.error("error encountered while updating data", exc_info=e)
+        logging.error("error encountered while updating display", exc_info=e)
         display.led_reset_to_default(errored=True)
 
 signal.pause()
