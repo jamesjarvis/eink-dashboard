@@ -132,7 +132,12 @@ while True:
             lon=settings["longitude"],
         )
         storage.set_weather_data(weather_data)
+    except Exception as e:
+        logging.error("error encountered while updating weather data", exc_info=e)
+        display.led_reset_to_default(errored=True)
+        continue
 
+    try:
         logging.debug("Updating train data")
         # Update train data
         train_data = api.get_train_departure_times(
@@ -142,7 +147,7 @@ while True:
         )
         storage.set_train_data(train_data)
     except Exception as e:
-        logging.error("error encountered while updating data", exc_info=e)
+        logging.error("error encountered while updating train data", exc_info=e)
         display.led_reset_to_default(errored=True)
         continue
 

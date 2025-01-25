@@ -100,10 +100,11 @@ def get_forecast(lat: float, lon: float, api_key: str) -> WeatherData:
             json=payload,
         )
     except Exception as e:
-        return None
+        logging.error("Exception encountered whilst fetching weather", exc_info=e)
+        return WeatherData(last_updated=None)
     if r.status_code != 200:
         logging.error("Bad response from weather forecasting service", r.status_code)
-        return None
+        return WeatherData(last_updated=None)
 
     response_json = r.json()
 
@@ -228,14 +229,16 @@ def get_train_departure_times(
     try:
         r = requests.get(url, auth=(username, password))
     except Exception as e:
-        return None
+        logging.error("Exception encountered whilst fetching train info", exc_info=e)
+        return TrainData(last_updated=None)
     if r.status_code != 200:
-        return None
+        logging.error("Bad response from train times service", r.status_code)
+        return TrainData(last_updated=None)
     departures = []
     try:
         services = r.json()["services"]
         if not services:
-            return None
+            return TrainData(last_updated=datetime.datetime.utcnow())
         for service in services:
             if "locationDetail" not in service:
                 continue
@@ -268,7 +271,7 @@ def get_train_departure_times(
             departures.append(departure)
     except Exception as e:
         logging.warn("Failed to parse train times", e)
-        return None
+        return TrainData(last_updated=None)
     return TrainData(
         last_updated=datetime.datetime.utcnow(),
         departures=departures,
