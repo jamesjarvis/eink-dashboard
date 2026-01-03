@@ -5,9 +5,10 @@ from PIL import Image
 import logging
 import datetime
 
-import camera
-import api
 import graphics
+import api
+import camera
+import threading
 
 from storage import Storage
 
@@ -36,6 +37,14 @@ class Display:
         self.inky_dev = InkyDev()
         self.storage = storage
         self.last_redraw_time = None
+        self._lock = threading.Lock()
+
+        # Initialize the display setup explicitly so we can override settings
+        self.inky_display.setup()
+        # Reduce SPI speed to 488kHz to prevent signal corruption/noise issues
+        # Standard is 3MHz, but 488kHz is much more stable over longer wires/hats
+        if self.inky_display._spi_bus:
+            self.inky_display._spi_bus.max_speed_hz = 488000
 
         self.led_reset_to_default()
 
@@ -93,55 +102,63 @@ class Display:
         """
         redraw redraws the display with the latest available information.
         """
-        # Set all LEDs to a low blue colour to indicate a refresh is happening.
-        logging.debug("Redrawing display")
-        self.led_set_all(0, 0, 50)
+        # Acquire lock to ensure we don't conflict with other threads (e.g. button presses)
+        if not self._lock.acquire(blocking=False):
+            logging.warning("Display redraw skipped - lock already held.")
+            return
 
-        # Background image.
-        image = self.storage.get_latest_image()
-        # Get the original dimensions
-        original_width, original_height = image.size
+        try:
+            # Set all LEDs to a low blue colour to indicate a refresh is happening.
+            logging.debug("Redrawing display")
+            self.led_set_all(0, 0, 50)
 
-        # Calculate the new dimensions for the 3:4 aspect ratio
-        # To maintain maximum resolution, we'll match the height and crop the width
-        new_height = original_height
-        new_width = int(new_height * (3 / 4))
+            # Background image.
+            image = self.storage.get_latest_image()
+            # Get the original dimensions
+            original_width, original_height = image.size
 
-        # If the new width is greater than the original width, adjust for height instead
-        if new_width > original_width:
-            new_width = original_width
-            new_height = int(new_width * (4 / 3))
+            # Calculate the new dimensions for the 3:4 aspect ratio
+            # To maintain maximum resolution, we'll match the height and crop the width
+            new_height = original_height
+            new_width = int(new_height * (3 / 4))
 
-        # Calculate the cropping box (centered)
-        left = (original_width - new_width) / 2
-        top = (original_height - new_height) / 2
-        right = (original_width + new_width) / 2
-        bottom = (original_height + new_height) / 2
+            # If the new width is greater than the original width, adjust for height instead
+            if new_width > original_width:
+                new_width = original_width
+                new_height = int(new_width * (4 / 3))
 
-        # Crop the image
-        image = image.crop((left, top, right, bottom))
-        # Flip image for the display.
-        image = image.transpose(Image.FLIP_LEFT_RIGHT)
-        # Resize for the rest of the render logic.
-        image = image.resize((SIZE_Y, SIZE_X))
+            # Calculate the cropping box (centered)
+            left = (original_width - new_width) / 2
+            top = (original_height - new_height) / 2
+            right = (original_width + new_width) / 2
+            bottom = (original_height + new_height) / 2
 
-        # Draw overlay on top.
-        image = graphics.draw_overlay(
-            image=image,
-            weather=self.storage.get_weather_data(),
-            train=self.storage.get_train_data(),
-        )
+            # Crop the image
+            image = image.crop((left, top, right, bottom))
+            # Flip image for the display.
+            image = image.transpose(Image.FLIP_LEFT_RIGHT)
+            # Resize for the rest of the render logic.
+            image = image.resize((SIZE_Y, SIZE_X))
 
-        # Rotate to set back onto the display
-        image = image.rotate(90, expand=True)
+            # Draw overlay on top.
+            image = graphics.draw_overlay(
+                image=image,
+                weather=self.storage.get_weather_data(),
+                train=self.storage.get_train_data(),
+            )
 
-        # Draw onto display.
-        logging.info("Beginning Display Redraw")
+            # Rotate to set back onto the display
+            image = image.rotate(90, expand=True)
 
-        self.inky_display.set_image(image, saturation=SATURATION)
-        self.inky_display.show()
+            # Draw onto display.
+            logging.info("Beginning Display Redraw")
 
-        logging.debug("Redraw complete")
+            self.inky_display.set_image(image, saturation=SATURATION)
+            self.inky_display.show()
 
-        self.led_reset_to_default()
-        self.last_redraw_time = datetime.datetime.utcnow()
+            logging.debug("Redraw complete")
+
+            self.led_reset_to_default()
+            self.last_redraw_time = datetime.datetime.utcnow()
+        finally:
+            self._lock.release()
