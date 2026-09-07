@@ -6,7 +6,18 @@
 
 ![Eink-display](./images/display_angled.jpg)
 
-Currently, this repo is just an assortment of random views I am creating for the display:
+## What is actually running
+
+**[v2](./v2/) is the live system.** It runs on the Raspberry Pi Zero `pi-zero`
+(`pi-zero.local`, or `pi-zero.tail8a37bd.ts.net` over Tailscale), driving a Pimoroni
+InkyDev board with an Inky Impression 7-colour display, and a Pi camera. It is started by
+`display.service` under systemd and shows a photo with a weather and train-times overlay.
+See [the v2 README](./v2/README.md) for deploying and debugging it.
+
+Everything below this line is **v1**, kept for reference. It targeted a Waveshare 7.5"
+display driven from cron, and is no longer deployed anywhere.
+
+## v1 views
 
 | view                                         | script                    |
 | -------------------------------------------- | ------------------------- |
@@ -17,7 +28,7 @@ Currently, this repo is just an assortment of random views I am creating for the
 
 **Disclaimer**, this is not my best work - but it's been a bit of lockdown fun :D
 
-## Installation
+## v1 installation
 
 This requires python3 installed, as well as some other additional components.
 

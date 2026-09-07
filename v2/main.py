@@ -14,6 +14,7 @@
 import signal
 import time
 import logging
+import re
 from logging.handlers import RotatingFileHandler
 from datetime import datetime, timedelta
 from inkydev import PIN_INTERRUPT
@@ -36,14 +37,27 @@ rfh = RotatingFileHandler(
     encoding=None,
     delay=0,
 )
+SECRET_PATTERN = re.compile(r"(apikey=)[^&\s)'\"]+")
+
+
+class RedactingFormatter(logging.Formatter):
+    def format(self, record):
+        return SECRET_PATTERN.sub(r"\1REDACTED", super().format(record))
+
+
+rfh.setFormatter(
+    RedactingFormatter(
+        "%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s",
+        "%y-%m-%d %H:%M:%S",
+    )
+)
 logging.basicConfig(
-    format="%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s",
-    datefmt="%y-%m-%d %H:%M:%S",
     level=logging.DEBUG,
     handlers=[
         rfh,
     ],
 )
+logging.getLogger("urllib3").setLevel(logging.INFO)
 
 # Set up the storage.
 storage = Storage()
@@ -118,10 +132,11 @@ while True:
         f"Updating data from external sources, last redraw was {display.last_redraw_time.isoformat() if display.last_redraw_time else 'UNKNOWN'}"
     )
 
+    settings = storage.get_settings()
+    fetch_failed = False
+
     try:
         logging.debug("Updating weather data")
-        # Update weather data
-        settings = storage.get_settings()
         weather_data = api.get_forecast(
             lat=settings["latitude"],
             lon=settings["longitude"],
@@ -131,31 +146,37 @@ while True:
             lat=settings["latitude"],
             lon=settings["longitude"],
         )
-        storage.set_weather_data(weather_data)
+        if weather_data.forecasts and weather_data.sunrise and weather_data.sunset:
+            storage.set_weather_data(weather_data)
+        else:
+            fetch_failed = True
+            logging.warning("Incomplete weather data, keeping last known good")
     except Exception as e:
+        fetch_failed = True
         logging.error("error encountered while updating weather data", exc_info=e)
-        display.led_reset_to_default(errored=True)
-        continue
 
     try:
         logging.debug("Updating train data")
-        # Update train data
         train_data = api.get_train_departure_times(
             username=settings["realtime_trains_username"],
             password=settings["realtime_trains_password"],
             station_code=settings["train_station"],
         )
-        storage.set_train_data(train_data)
+        if train_data.last_updated:
+            storage.set_train_data(train_data)
+        else:
+            fetch_failed = True
+            logging.warning("No train data, keeping last known good")
     except Exception as e:
+        fetch_failed = True
         logging.error("error encountered while updating train data", exc_info=e)
-        display.led_reset_to_default(errored=True)
-        continue
 
     try:
-        # Redraw display
         display.redraw()
-    except RuntimeError:
+    except Exception as e:
+        fetch_failed = True
         logging.error("error encountered while updating display", exc_info=e)
-        display.led_reset_to_default(errored=True)
+
+    display.led_reset_to_default(errored=fetch_failed)
 
 signal.pause()

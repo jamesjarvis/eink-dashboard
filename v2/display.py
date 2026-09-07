@@ -1,6 +1,6 @@
 import inky.inky_uc8159 as inky
 from inkydev import InkyDev
-from time import sleep
+from time import sleep, monotonic
 from PIL import Image
 import logging
 import datetime
@@ -14,6 +14,37 @@ from storage import Storage
 
 SIZE_X, SIZE_Y = 600, 448
 SATURATION = 0.5
+BUSY_ASSERT_GRACE_SECONDS = 0.5
+BUSY_TIMEOUT_SECONDS = 40.0
+
+
+class PatchedInky(inky.Inky):
+    """
+    PatchedInky works around a race in inky 1.5.0 (still present upstream in 2.4.0).
+
+    The stock _busy_wait samples the busy pin once on entry. If it reads high it assumes
+    the panel is disconnected and blocks for the whole timeout. The panel only holds busy
+    low for about 2ms after reset, so that single sample misses constantly on a Pi Zero
+    and roughly a quarter of all redraws paid a 90 second penalty.
+
+    Instead, poll for the falling edge for a short grace period. If the panel never
+    asserts busy the operation had already finished, so returning is correct and costs
+    the grace period rather than the full timeout.
+    """
+
+    def _busy_wait(self, timeout=BUSY_TIMEOUT_SECONDS):
+        start = monotonic()
+
+        while self._gpio.input(self.busy_pin):
+            if monotonic() - start >= BUSY_ASSERT_GRACE_SECONDS:
+                return
+            sleep(0.0005)
+
+        while not self._gpio.input(self.busy_pin):
+            if monotonic() - start >= timeout:
+                logging.warning("Busy wait timed out after %.2fs", monotonic() - start)
+                return
+            sleep(0.001)
 
 
 class Display:
@@ -24,7 +55,7 @@ class Display:
     is a section of the display roughly 1/3rd the height of the display, from the bottom.
     It will contain:
     - Weather (bottom left)
-    - Train times + important days (bottom right)
+    - Train times (bottom right)
 
     The display is in portrait mode.
     """
@@ -33,7 +64,7 @@ class Display:
         self,
         storage: Storage,
     ):
-        self.inky_display = inky.Inky((SIZE_X, SIZE_Y))
+        self.inky_display = PatchedInky((SIZE_X, SIZE_Y))
         self.inky_dev = InkyDev()
         self.storage = storage
         self.last_redraw_time = None
