@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-HOST=pi@pi-zero.local
+HOST_NAME=${DISPLAY_HOST:-pi-zero.local}
+if ! ssh -o ConnectTimeout=5 -o BatchMode=yes "pi@$HOST_NAME" true 2>/dev/null; then
+    echo "$HOST_NAME unreachable, falling back to tailscale"
+    HOST_NAME=pi-zero.tail8a37bd.ts.net
+fi
+
+HOST=pi@$HOST_NAME
 HOST_LOCATION=/home/pi/
 
 find . -name '*.pyc' -delete

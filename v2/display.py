@@ -4,6 +4,7 @@ from time import sleep, monotonic
 from PIL import Image
 import logging
 import datetime
+import subprocess
 
 import graphics
 import api
@@ -22,6 +23,29 @@ BUSY_WAIT_LABELS = {
 }
 
 
+def soc_health():
+    """
+    soc_health reports SoC temperature and the Pi's throttling bitmask.
+
+    Busy pin stalls arrive in runs lasting hours to days rather than randomly per
+    redraw, so the useful question is what else is true of the machine while a run is
+    happening. Bit 0 of get_throttled is under-voltage now, bit 16 is under-voltage
+    since boot.
+    """
+    try:
+        with open("/sys/class/thermal/thermal_zone0/temp") as f:
+            temp = int(f.read().strip()) / 1000
+        throttled = subprocess.run(
+            ["vcgencmd", "get_throttled"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        ).stdout.strip()
+        return "soc %.1fC %s" % (temp, throttled or "throttled=?")
+    except Exception as exc:
+        return "soc unavailable (%s)" % exc
+
+
 class LoggingInky(inky.Inky):
     """
     LoggingInky restores the stock inky 1.5.0 busy-wait behaviour and logs every wait.
@@ -37,9 +61,11 @@ class LoggingInky(inky.Inky):
     """
 
     _last_command = None
+    held_waits = ()
 
     def setup(self):
         self._last_command = None
+        self.held_waits = []
         super().setup()
 
     def _send_command(self, command, data=None):
@@ -54,6 +80,7 @@ class LoggingInky(inky.Inky):
             logging.warning(
                 "Busy wait after %s: pin held high, sleeping %.1fs", label, timeout
             )
+            self.held_waits.append(label)
             sleep(timeout)
             return
 
@@ -210,9 +237,18 @@ class Display:
             logging.info("Beginning Display Redraw")
 
             self.inky_display.set_image(image, saturation=SATURATION)
+            show_started = monotonic()
             self.inky_display.show()
+            elapsed = monotonic() - show_started
 
-            logging.debug("Redraw complete")
+            held = self.inky_display.held_waits
+            logging.info(
+                "Redraw complete in %.1fs, %d/4 busy waits held high (%s), %s",
+                elapsed,
+                len(held),
+                ", ".join(held) if held else "none",
+                soc_health(),
+            )
 
             self.led_reset_to_default()
             self.last_redraw_time = datetime.datetime.utcnow()
