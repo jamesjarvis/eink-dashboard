@@ -62,5 +62,20 @@ A healthy cycle logs `Updating data from external sources`, then `Beginning Disp
 then `Redraw complete`, and then `too soon, skipping for now` every 10 seconds until the next
 `update_interval_minutes` window.
 
+`Beginning Display Redraw` to `Redraw complete` should be about 31 seconds. A redraw that
+finishes in under 10 seconds did not complete its waveform and will have left a corrupted
+frame on the panel.
+
+Each redraw performs four busy waits, logged as `Busy wait after reset`, `power on`,
+`display refresh` and `power off`. A pin that reads high has no signal to wait on, so the
+driver sleeps out the 90 second timeout instead and the redraw takes a multiple of that:
+
+```bash
+grep -o "Busy wait after [a-z ]*: pin held high" display.log | sort | uniq -c
+```
+
+That count over a few days tells us which command the panel fails to signal against, which
+is the open question behind the slow redraws.
+
 Weather and train fetches are best-effort. If either fails the last known good data is kept,
 the display still redraws, and the D button LED turns red until the next successful cycle.

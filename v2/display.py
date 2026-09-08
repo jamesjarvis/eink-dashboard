@@ -14,37 +14,62 @@ from storage import Storage
 
 SIZE_X, SIZE_Y = 600, 448
 SATURATION = 0.5
-BUSY_ASSERT_GRACE_SECONDS = 0.5
-BUSY_TIMEOUT_SECONDS = 40.0
+BUSY_TIMEOUT_SECONDS = 90.0
+BUSY_WAIT_LABELS = {
+    inky.UC8159_PON: "power on",
+    inky.UC8159_DRF: "display refresh",
+    inky.UC8159_POF: "power off",
+}
 
 
-class PatchedInky(inky.Inky):
+class LoggingInky(inky.Inky):
     """
-    PatchedInky works around a race in inky 1.5.0 (still present upstream in 2.4.0).
+    LoggingInky restores the stock inky 1.5.0 busy-wait behaviour and logs every wait.
 
-    The stock _busy_wait samples the busy pin once on entry. If it reads high it assumes
-    the panel is disconnected and blocks for the whole timeout. The panel only holds busy
-    low for about 2ms after reset, so that single sample misses constantly on a Pi Zero
-    and roughly a quarter of all redraws paid a 90 second penalty.
+    A busy pin reading high means the panel never signalled, and the only safe response
+    is to sleep out the timeout. The timeout outlasts a refresh, so the power off that
+    follows cannot land mid waveform. Polling for the falling edge and returning early
+    instead cuts the panel rails partway through UC8159_DRF, which leaves roughly half
+    the pixels holding their previous colour.
 
-    Instead, poll for the falling edge for a short grace period. If the panel never
-    asserts busy the operation had already finished, so returning is correct and costs
-    the grace period rather than the full timeout.
+    Each wait is logged against the command it follows, so the held-high rate per
+    command is recoverable from display.log.
     """
+
+    _last_command = None
+
+    def setup(self):
+        self._last_command = None
+        super().setup()
+
+    def _send_command(self, command, data=None):
+        self._last_command = command
+        super()._send_command(command, data)
 
     def _busy_wait(self, timeout=BUSY_TIMEOUT_SECONDS):
+        label = BUSY_WAIT_LABELS.get(self._last_command, "reset")
         start = monotonic()
 
-        while self._gpio.input(self.busy_pin):
-            if monotonic() - start >= BUSY_ASSERT_GRACE_SECONDS:
-                return
-            sleep(0.0005)
+        if self._gpio.input(self.busy_pin):
+            logging.warning(
+                "Busy wait after %s: pin held high, sleeping %.1fs", label, timeout
+            )
+            sleep(timeout)
+            return
 
         while not self._gpio.input(self.busy_pin):
             if monotonic() - start >= timeout:
-                logging.warning("Busy wait timed out after %.2fs", monotonic() - start)
+                logging.warning(
+                    "Busy wait after %s: timed out after %.2fs",
+                    label,
+                    monotonic() - start,
+                )
                 return
-            sleep(0.001)
+            sleep(0.01)
+
+        logging.debug(
+            "Busy wait after %s: released after %.2fs", label, monotonic() - start
+        )
 
 
 class Display:
@@ -64,7 +89,7 @@ class Display:
         self,
         storage: Storage,
     ):
-        self.inky_display = PatchedInky((SIZE_X, SIZE_Y))
+        self.inky_display = LoggingInky((SIZE_X, SIZE_Y))
         self.inky_dev = InkyDev()
         self.storage = storage
         self.last_redraw_time = None
